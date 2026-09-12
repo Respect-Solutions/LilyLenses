@@ -25,8 +25,13 @@ Thumbs.db
 
 # Dependencies
 node_modules/
-vendor/
+/vendor/
 
 # WordPress temporary directories
 wp-content/cache/
 wp-content/upgrade/
+
+# Local project notes (untracked)
+PROJECT_ANALYSIS.md
+DEPLOYMENT.md
+DEPLOYMENT-CPANEL.md
