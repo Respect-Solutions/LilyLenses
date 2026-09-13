@@ -180,130 +180,6 @@
 		closeDropdowns();
 	}, { passive: true });
 
-	/* Hero carousel */
-	var carousel = document.querySelector('[data-lily-carousel]');
-
-	if (carousel) {
-		var heroSlides = Array.prototype.slice.call(carousel.querySelectorAll('[data-lily-slide]'));
-		var heroDots = Array.prototype.slice.call(carousel.querySelectorAll('[data-lily-carousel-dot]'));
-		var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-		var heroCurrent = 0;
-		var heroTimer = null;
-		var HERO_INTERVAL = 6500;
-
-		var heroGo = function (index) {
-			index = (index + heroSlides.length) % heroSlides.length;
-
-			heroSlides[heroCurrent].classList.remove('is-active');
-			heroSlides[heroCurrent].setAttribute('aria-hidden', 'true');
-
-			if (heroDots[heroCurrent]) {
-				heroDots[heroCurrent].classList.remove('is-active');
-				heroDots[heroCurrent].setAttribute('aria-selected', 'false');
-			}
-
-			heroCurrent = index;
-
-			heroSlides[heroCurrent].classList.add('is-active');
-			heroSlides[heroCurrent].setAttribute('aria-hidden', 'false');
-
-			if (heroDots[heroCurrent]) {
-				heroDots[heroCurrent].classList.add('is-active');
-				heroDots[heroCurrent].setAttribute('aria-selected', 'true');
-			}
-		};
-
-		var heroStop = function () {
-			if (heroTimer) {
-				clearInterval(heroTimer);
-				heroTimer = null;
-			}
-		};
-
-		var heroStart = function () {
-			heroStop();
-			if (!reduceMotion.matches && heroSlides.length > 1) {
-				heroTimer = setInterval(function () {
-					heroGo(heroCurrent + 1);
-				}, HERO_INTERVAL);
-			}
-		};
-
-		var prevBtn = carousel.querySelector('[data-lily-carousel-prev]');
-		var nextBtn = carousel.querySelector('[data-lily-carousel-next]');
-
-		if (prevBtn) {
-			prevBtn.addEventListener('click', function () {
-				heroGo(heroCurrent - 1);
-				heroStart();
-			});
-		}
-
-		if (nextBtn) {
-			nextBtn.addEventListener('click', function () {
-				heroGo(heroCurrent + 1);
-				heroStart();
-			});
-		}
-
-		heroDots.forEach(function (dot) {
-			dot.addEventListener('click', function () {
-				heroGo(parseInt(dot.getAttribute('data-index'), 10) || 0);
-				heroStart();
-			});
-		});
-
-		carousel.addEventListener('mouseenter', heroStop);
-		carousel.addEventListener('mouseleave', heroStart);
-		carousel.addEventListener('focusin', heroStop);
-		carousel.addEventListener('focusout', heroStart);
-
-		carousel.addEventListener('keydown', function (event) {
-			if (event.key === 'ArrowLeft') {
-				heroGo(heroCurrent - 1);
-				heroStart();
-			} else if (event.key === 'ArrowRight') {
-				heroGo(heroCurrent + 1);
-				heroStart();
-			}
-		});
-
-		/* Touch swipe (direction-aware for RTL) */
-		var touchStartX = null;
-
-		carousel.addEventListener('touchstart', function (event) {
-			if (event.touches.length === 1) {
-				touchStartX = event.touches[0].clientX;
-			}
-		}, { passive: true });
-
-		carousel.addEventListener('touchend', function (event) {
-			if (touchStartX === null) {
-				return;
-			}
-
-			var dx = event.changedTouches[0].clientX - touchStartX;
-			touchStartX = null;
-
-			if (Math.abs(dx) < 40) {
-				return;
-			}
-
-			var rtl = document.documentElement.getAttribute('dir') === 'rtl';
-			var forward = (dx < 0) !== rtl;
-			heroGo(heroCurrent + (forward ? 1 : -1));
-			heroStart();
-		}, { passive: true });
-
-		if (reduceMotion.addEventListener) {
-			reduceMotion.addEventListener('change', function () {
-				heroStart();
-			});
-		}
-
-		heroStart();
-	}
-
 	/* Announcement bar marquee */
 	var announcement = document.querySelector('.lily-announcement');
 
@@ -326,11 +202,10 @@
 		window.addEventListener('resize', syncAnnouncement, { passive: true });
 		syncAnnouncement();
 	}
-}());
 
 	/**
 	 * Subtle scroll reveal: section headings and cards fade/slide in once.
-	 * Progressive enhancement only â€” without JS, everything stays visible.
+	 * Progressive enhancement only — without JS, everything stays visible.
 	 */
 	function initLilyReveal() {
 		var candidates = document.querySelectorAll(
@@ -547,7 +422,7 @@
 
 	/* --------------------------------------------------------------------
 	 * Quantity: [ − ] input [ + ] around the native input
-	 * Single Product + Cart
+	 * Single Product + Cart (also re-run after each drawer re-render)
 	 * ------------------------------------------------------------------ */
 	function initProductQty() {
 		var wraps = document.querySelectorAll('.lily-sp-cart-area .quantity, .woocommerce-cart-form .quantity, #lily-cart-drawer .quantity');
@@ -596,8 +471,89 @@
 		});
 	}
 
-	initProductQty();
+	/* --------------------------------------------------------------------
+	 * PRESCRIPTION POWER — quiet client-side gate (UX layer only).
+	 * Highlights ONLY the missing eye selector(s), shows one restrained
+	 * Lily-styled message, and clears automatically as soon as valid
+	 * values are chosen. The server always re-validates authoritative.
+	 * ------------------------------------------------------------------ */
+	function initRxValidation() {
+		function selectsIn(form) {
+			return form.querySelectorAll('.lily-rx__select');
+		}
 
+		function missingFields(form) {
+			var missing = [];
+			Array.prototype.forEach.call(selectsIn(form), function (sel) {
+				if (!sel.value) { missing.push(sel); }
+			});
+			return missing;
+		}
+
+		function clearErrors(form) {
+			Array.prototype.forEach.call(form.querySelectorAll('.lily-rx__select.is-invalid'), function (sel) {
+				sel.classList.remove('is-invalid');
+				sel.removeAttribute('aria-invalid');
+			});
+			var msg = form.querySelector('.lily-rx__error');
+			if (msg) { msg.hidden = true; }
+		}
+
+		function showErrors(form, missing) {
+			var i18n = window.lilyI18n || {};
+			missing.forEach(function (sel) {
+				sel.classList.add('is-invalid');
+				sel.setAttribute('aria-invalid', 'true');
+			});
+			var rx = form.querySelector('.lily-rx');
+			if (!rx) { return; }
+			var msg = rx.querySelector('.lily-rx__error');
+			if (!msg) {
+				msg = document.createElement('p');
+				msg.className = 'lily-rx__error';
+				msg.setAttribute('role', 'alert');
+				var hint = rx.querySelector('.lily-rx__hint');
+				rx.insertBefore(msg, hint || null);
+			}
+			msg.textContent = i18n.selectPowerForBothEyes || 'Please select the prescription power for both eyes.';
+			msg.hidden = false;
+		}
+
+		/* Live feedback: choosing a value clears that field instantly; the
+		   message disappears only once both eyes have valid selections. */
+		document.addEventListener('change', function (e) {
+			var sel = e.target;
+			if (!sel.classList || !sel.classList.contains('lily-rx__select') || !sel.value) { return; }
+			sel.classList.remove('is-invalid');
+			sel.removeAttribute('aria-invalid');
+			var form = sel.closest('form');
+			if (form && !missingFields(form).length) { clearErrors(form); }
+		});
+
+		window.lilyRx = {
+			validate: function (form) {
+				var missing = missingFields(form);
+				if (!missing.length) {
+					clearErrors(form);
+					return true;
+				}
+				clearErrors(form);
+				showErrors(form, missing);
+				try { missing[0].focus(); } catch (err) { /* no-op */ }
+				return false;
+			}
+		};
+
+		/* The selects carry required for no-JS semantics, but native browser
+		   bubbles would swallow the Lily feedback — hand validation to the gate. */
+		Array.prototype.forEach.call(document.querySelectorAll('form.cart'), function (form) {
+			if (form.querySelector('.lily-rx__select')) {
+				form.setAttribute('novalidate', 'novalidate');
+			}
+		});
+	}
+
+	initRxValidation();
 	/* --------------------------------------------------------------------
 	 * CART DRAWER — native WooCommerce presentation layer.
 	 * Every mutation goes through wc-ajax endpoints that use core cart
@@ -733,6 +689,11 @@
 		document.addEventListener('submit', function (e) {
 			var form = e.target;
 			if (!form.classList.contains('cart') || !form.querySelector('.single_add_to_cart_button')) { return; }
+
+			/* Prescription Power gate — blocks the request with field-level
+			   feedback before anything is sent (server re-validates too). */
+			if (window.lilyRx && !window.lilyRx.validate(form)) { e.preventDefault(); return; }
+
 			e.preventDefault();
 
 			var btn = form.querySelector('.single_add_to_cart_button');
@@ -762,6 +723,7 @@
  					} else {
  						// Preserve real WooCommerce error behavior — no fake success, no drawer.
  						showNotices(data.notices);
+ 						open(); // the drawer is the theme's notice surface — reveal the reason
  					}
  				})
  				.catch(function () {
@@ -798,6 +760,7 @@
 					} else {
 						// Real WooCommerce notices (stock, RX validation) — no fake success.
 						showNotices(data.notices);
+						open(); // reveal the reason the add failed
 					}
 				})
 				.catch(function () {
@@ -914,12 +877,156 @@
 		syncDots();
 	}
 
+	/* --------------------------------------------------------------------
+	 * Single product accordions: Description / Details / How to Use / Reviews.
+	 * Closed by default; only the clicked item toggles. Mouse clicks blur
+	 * the button afterwards so no persistent focus styling remains, while
+	 * keyboard users keep the :focus-visible ring (see lily.css).
+	 * ------------------------------------------------------------------ */
+	function initProductAccordions() {
+		var wrap = document.querySelector('[data-lily-sp-acc]');
+		if (!wrap || wrap.dataset.lilySpAccInit) { return; }
+		wrap.dataset.lilySpAccInit = '1';
+
+		var setItem = function (item, open) {
+			item.classList.toggle('is-open', open);
+			var btn = item.querySelector('[data-lily-sp-acc-toggle]');
+			if (btn) { btn.setAttribute('aria-expanded', open ? 'true' : 'false'); }
+		};
+
+		wrap.addEventListener('click', function (event) {
+			var btn = event.target.closest ? event.target.closest('[data-lily-sp-acc-toggle]') : null;
+			if (!btn || !wrap.contains(btn)) { return; }
+			var item = btn.closest('[data-lily-sp-acc-item]');
+			if (!item) { return; }
+			setItem(item, !item.classList.contains('is-open'));
+			if (event.detail !== 0 && btn.blur) { btn.blur(); }
+		});
+
+		/* After a native review POST (or a #lily-reviews / #comment- link),
+		   reveal the reviews panel so the notice/content is visible. */
+		var shouldOpenReviews = false;
+		try {
+			if (window.location.hash === '#lily-reviews' ||
+				(window.location.hash && window.location.hash.indexOf('#comment-') === 0)) {
+				shouldOpenReviews = true;
+			} else if (window.URLSearchParams && new window.URLSearchParams(window.location.search).get('lily_review') === 'submitted') {
+				shouldOpenReviews = true;
+			}
+		} catch (err) { /* keep accordions closed */ }
+
+		if (shouldOpenReviews) {
+			var tab = wrap.querySelector('#lily-sp-tab-reviews');
+			var reviewsItem = tab ? tab.closest('[data-lily-sp-acc-item]') : null;
+			if (reviewsItem) {
+				setItem(reviewsItem, true);
+				var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+				var target = document.getElementById('lily-reviews');
+				if (target && target.scrollIntoView) {
+					window.setTimeout(function () {
+						target.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' });
+					}, 60);
+				}
+			}
+		}
+	}
+
+	/* --------------------------------------------------------------------
+	 * Reviews: WRITE A REVIEW toggles the native review form; file input
+	 * is trimmed to 3 client-side (server-side validation is authoritative).
+	 * ------------------------------------------------------------------ */
+	function initLilyReviewForms() {
+		var toggles = document.querySelectorAll('[data-lily-review-form-toggle]');
+		var formWrap = document.getElementById('lily-review-form');
+		if (!toggles.length || !formWrap) { return; }
+
+		var setToggles = function (expanded) {
+			Array.prototype.forEach.call(toggles, function (t) {
+				t.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+			});
+		};
+
+		Array.prototype.forEach.call(toggles, function (toggle) {
+			toggle.addEventListener('click', function (event) {
+				var opening = formWrap.hidden;
+				formWrap.hidden = !opening;
+				setToggles(opening);
+				if (opening) {
+					var first = formWrap.querySelector('input[name="rating"], textarea, input[name="author"], input[name="email"]');
+					if (first && first.focus) { first.focus({ preventScroll: false }); }
+				} else if (event.detail !== 0 && toggle.blur) {
+					toggle.blur();
+				}
+			});
+		});
+
+		var fileInput = document.getElementById('lily-review-images');
+		if (fileInput) {
+			fileInput.addEventListener('change', function () {
+				if (fileInput.files && fileInput.files.length > 3 && window.DataTransfer) {
+					try {
+						var dt = new window.DataTransfer();
+						for (var i = 0; i < 3; i++) { dt.items.add(fileInput.files[i]); }
+						fileInput.files = dt.files;
+					} catch (err) { /* server trims to 3 regardless */ }
+				}
+			});
+		}
+	}
+
+	/* --------------------------------------------------------------------
+	 * Reviews: minimal accessible lightbox for customer photo thumbnails.
+	 * No dependency; ESC / backdrop / close button all dismiss.
+	 * ------------------------------------------------------------------ */
+	function initReviewLightbox() {
+		var box = document.querySelector('[data-lily-review-lightbox]');
+		if (!box || box.dataset.lilyReviewLbInit) { return; }
+		box.dataset.lilyReviewLbInit = '1';
+
+		var img = box.querySelector('[data-lily-review-lightbox-img]');
+		var lastFocus = null;
+
+		var open = function (src) {
+			if (!src || !img) { return; }
+			lastFocus = document.activeElement;
+			img.setAttribute('src', src);
+			box.hidden = false;
+			var closeBtn = box.querySelector('[data-lily-review-lightbox-close]');
+			if (closeBtn && closeBtn.focus) { closeBtn.focus(); }
+		};
+
+		var close = function () {
+			if (box.hidden) { return; }
+			box.hidden = true;
+			if (img) { img.removeAttribute('src'); }
+			if (lastFocus && lastFocus.focus) { lastFocus.focus(); }
+		};
+
+		document.addEventListener('click', function (event) {
+			var zoom = event.target.closest ? event.target.closest('[data-lily-review-zoom]') : null;
+			if (zoom) {
+				open(zoom.getAttribute('data-lily-review-zoom'));
+				return;
+			}
+			if (event.target.closest && event.target.closest('[data-lily-review-lightbox-close]')) {
+				close();
+			}
+		});
+
+		document.addEventListener('keydown', function (event) {
+			if (event.key === 'Escape') { close(); }
+		});
+	}
+
 	function bootLilyModules() {
 		initProductQty();
 		initCartDrawer();
 		initCheckoutShippingSync();
 		initContactForm();
 		initBestSellersCarousel();
+		initProductAccordions();
+		initLilyReviewForms();
+		initReviewLightbox();
 	}
 
 	if (document.readyState === 'loading') {
@@ -927,4 +1034,4 @@
 	} else {
 		bootLilyModules();
 	}
-
+}());
