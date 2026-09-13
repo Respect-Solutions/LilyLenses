@@ -10709,6 +10709,350 @@ html body.woocommerce-checkout #payment div.payment_box {
 	object-fit: contain;
 }
 
+/* ==========================================================================
+   LILY — Responsive polish pass (mobile 320–767 / tablet 768–1024)
+   Append-only layer: every rule below lives inside a max-width query,
+   so the 1025px+ desktop rendering is unchanged. No markup, PHP, JS,
+   WooCommerce logic or dashboard settings are affected.
+   ========================================================================== */
+
+/* ---- Global overflow, gutter and type guards ---- */
+@media (max-width: 1024px) {
+	:root {
+		--lily-gutter: 24px;
+	}
+
+	html,
+	body {
+		overflow-x: clip;
+	}
+
+	html body img {
+		max-width: 100%;
+	}
+
+	.lily-site-header__inner,
+	.lily-site-branding,
+	.lily-header-actions,
+	.lily-shop__main,
+	.lily-lens-finder__stage {
+		min-width: 0;
+	}
+
+	.lily-section-row {
+		flex-wrap: wrap;
+		gap: 18px;
+	}
+
+	.lily-section-heading h2,
+	.lily-hero__title,
+	.lily-shop__title {
+		overflow-wrap: break-word;
+	}
+
+	/* Tablet nav tightening (the drawer still engages at 900px). */
+	html .lily-primary-nav .lily-nav-link {
+		font-size: 0.95rem;
+	}
+
+	.lily-site-branding .lily-nav-logo-img {
+		width: 70px;
+	}
+}
+
+@media (max-width: 767px) {
+	:root {
+		--lily-gutter: 16px;
+	}
+
+	.lily-site-header__inner {
+		gap: 10px;
+	}
+
+	.lily-header-actions {
+		gap: 6px;
+	}
+
+	.lily-site-branding img {
+		max-width: 100%;
+		height: auto;
+	}
+}
+
+/* ---- Hero: viewport-capped height, padded overlay, fluid title ---- */
+@media (max-width: 1024px) {
+	.lily-hero__media {
+		height: calc(100svh - 110px);
+		min-height: 440px;
+		max-height: 640px;
+	}
+}
+
+@media (max-width: 767px) {
+	.lily-hero__media {
+		min-height: 420px;
+		max-height: 560px;
+	}
+
+	.lily-hero__container {
+		padding-inline: var(--lily-gutter);
+	}
+
+	.lily-hero__content {
+		max-width: 100%;
+	}
+
+	.lily-hero__title {
+		font-size: clamp(34px, 11vw, 46px);
+	}
+
+	.lily-hero__description {
+		max-width: 100%;
+		font-size: 15px;
+	}
+
+	.lily-hero__cta {
+		max-width: 100%;
+	}
+}
+
+/* ---- Brands: legible mobile logos, seamless loop untouched ---- */
+@media (max-width: 767px) {
+	.lily-brand img,
+	.lily-brand__logo {
+		height: 32px;
+		max-width: 150px;
+	}
+}
+
+@media (max-width: 380px) {
+	.lily-brands__set {
+		gap: 28px;
+		padding: 0 28px 0 0;
+	}
+}
+
+/* ---- Collections: stack the editorial split through tablet ---- */
+@media (max-width: 1024px) {
+	.lily-collections__layout {
+		grid-template-columns: 1fr;
+		gap: 32px;
+	}
+}
+
+@media (max-width: 767px) {
+	.lily-collections__grid {
+		gap: 16px;
+	}
+
+	.lily-collections__grid > * {
+		min-width: 0;
+	}
+}
+
+/* ---- Colors: 4-across tablet, 3-across mobile, smaller swatches ---- */
+@media (max-width: 1024px) {
+	.lily-colors__grid {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 20px;
+	}
+}
+
+@media (max-width: 767px) {
+	.lily-colors__grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 18px 12px;
+	}
+
+	.lily-color-card img,
+	.lily-color-card__swatch {
+		width: 64px;
+		height: 64px;
+	}
+}
+
+@media (max-width: 380px) {
+	.lily-color-card img,
+	.lily-color-card__swatch {
+		width: 56px;
+		height: 56px;
+	}
+}
+
+/* ---- Best Sellers: 3-across tablet, intentional 2-across mobile ---- */
+@media (max-width: 1024px) {
+	.lily-products-row--best {
+		scroll-padding-inline: var(--lily-gutter);
+	}
+
+	.lily-products-row--best .lily-product-card {
+		flex: 0 0 calc((100% - 40px) / 3);
+	}
+
+	.lily-best-sellers .lily-section-heading h2 {
+		font-size: clamp(32px, 5vw, 44px);
+	}
+}
+
+@media (max-width: 767px) {
+	.lily-products-row--best {
+		gap: 16px;
+	}
+
+	.lily-products-row--best .lily-product-card {
+		flex: 0 0 calc((100% - 16px) / 2);
+	}
+}
+
+/* ---- Lens Finder: single column, stacked benefits, readable steps ---- */
+@media (max-width: 1024px) {
+	.lily-lens-finder__inner {
+		grid-template-columns: 1fr;
+		gap: 40px;
+	}
+
+	.lily-lens-finder__visual img {
+		min-height: 0;
+		max-height: 440px;
+	}
+
+	.lily-lens-finder__steps-list {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.lily-lens-finder__steps-list li:nth-child(3) {
+		border-inline-start: 0;
+		padding-inline-start: 0;
+	}
+}
+
+@media (max-width: 767px) {
+	.lily-lens-finder__benefits {
+		grid-template-columns: 1fr;
+		gap: 16px;
+	}
+
+	.lily-lens-finder__cta {
+		max-width: 100%;
+	}
+
+	.lily-lens-finder__visual img {
+		aspect-ratio: 4 / 3;
+		max-height: 360px;
+	}
+
+	.lily-lens-finder__intro h2 {
+		font-size: clamp(34px, 10vw, 44px);
+	}
+}
+
+@media (max-width: 600px) {
+	.lily-lens-finder__steps-list {
+		grid-template-columns: 1fr;
+		gap: 0;
+	}
+
+	.lily-lens-finder__steps-list li + li {
+		border-inline-start: 0;
+		padding-inline-start: 0;
+		border-block-start: 1px solid rgba(254, 252, 221, 0.2);
+		padding-block-start: 18px;
+		margin-block-start: 18px;
+	}
+}
+
+/* ---- Footer: stack brand, 2-column menus, wrapping links, tidy bottom bar ---- */
+@media (max-width: 1024px) {
+	.lily-site-footer__inner {
+		grid-template-columns: 1fr;
+		gap: 32px;
+	}
+
+	.lily-footer-brand {
+		max-width: 560px;
+	}
+
+	.lily-footer-brand p {
+		max-width: 100%;
+	}
+
+	.lily-footer-menus {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 28px;
+		border-inline-start: 0;
+		padding-inline-start: 0;
+		padding-block-end: 32px;
+	}
+}
+
+@media (max-width: 767px) {
+	.lily-footer-menus {
+		gap: 28px 20px;
+	}
+
+	.lily-footer-menu a {
+		white-space: normal;
+		overflow-wrap: break-word;
+	}
+
+	.lily-footer-brand .custom-logo,
+	.lily-footer-brand .lily-footer-logo img {
+		max-height: 48px;
+		max-width: 100%;
+	}
+
+	.lily-footer-bottom {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 4px;
+		padding-block: 16px;
+	}
+
+	.lily-footer-bottom .lily-copyright,
+	.lily-footer-note {
+		padding-block: 4px;
+		text-align: start;
+	}
+
+	.lily-footer-social ul {
+		gap: 12px;
+	}
+}
+
+/* ---- Shop / product / checkout safety (layout issues only) ---- */
+@media (max-width: 767px) {
+	.lily-shop__title {
+		font-size: clamp(36px, 11vw, 48px);
+	}
+
+	.lily-checkout__billing > * {
+		min-width: 0;
+	}
+}
+
+/* Fix: FILTER/count and SORT BY collide/overlap below ~480px (toolbar
+   ran out of row space and the count text overlapped the sort label). */
+@media (max-width: 480px) {
+	.lily-shop-toolbar {
+		flex-wrap: wrap;
+		row-gap: 10px;
+	}
+
+	.lily-sort-form {
+		margin-inline-start: 0;
+	}
+}
+
+/* Fix: cart-drawer item row (unit price + qty stepper + line subtotal)
+   doesn't fit on one line below ~480px — subtotal got clipped off the
+   edge of the drawer instead of wrapping. */
+@media (max-width: 480px) {
+	#lily-cart-drawer .lily-cart-item__row {
+		flex-wrap: wrap;
+		row-gap: 6px;
+	}
+}
+
 
 
 

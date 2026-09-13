@@ -1,0 +1,49 @@
+== Zones ==
+Zone: Egypt (id 1)
+  locations: [{"code":"EG","type":"country"}]
+  method: flat_rate (1) enabled='yes' cost=0
+
+== Payment gateways ==
+bacs: enabled='no'
+cheque: enabled='no'
+cod: enabled='yes'
+
+== Available gateways ==
+[]
+
+== Raw cod option ==
+array (
+  'title' => 'Cash on delivery',
+  'collapse' => 'n',
+  'enabled' => 'yes',
+  'tax_status' => 'taxable',
+  'description' => '',
+  'enable_for_methods' => 
+  array (
+  ),
+  'enable_for_virtual' => 'no',
+)
+== wpdb direct ==
+db host: localhost name: local
+(object) array(
+   'option_id' => '2145',
+   'option_value' => 'a:7:{s:5:"title";s:16:"Cash on delivery";s:8:"collapse";s:1:"n";s:7:"enabled";s:3:"yes";s:10:"tax_status";s:7:"taxable";s:11:"description";s:0:"";s:18:"enable_for_methods";a:0:{}s:18:"enable_for_virtual";s:2:"no";}',
+   'autoload' => 'yes',
+)
+array (
+  'title' => 'Cash on delivery',
+  'collapse' => 'n',
+  'enabled' => 'yes',
+  'tax_status' => 'taxable',
+  'description' => '',
+  'enable_for_methods' => 
+  array (
+  ),
+  'enable_for_virtual' => 'no',
+)
+
+== Cart ==
+items: 0 needs_shipping: false
+customer country: US / billing: US
+
+== Calculated packages ==

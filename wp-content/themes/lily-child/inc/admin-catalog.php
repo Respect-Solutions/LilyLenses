@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Lily â†’ Brands / Colors / Looks / Durations admin screens + the product
  * "Lily Product Data" metabox.

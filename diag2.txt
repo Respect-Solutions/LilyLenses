@@ -1,0 +1,18 @@
+== Zones ==
+Zone: Egypt (id 1)
+  locations: [{"code":"EG","type":"country"}]
+  method: flat_rate (1) enabled='yes' cost=0
+
+== Payment gateways ==
+bacs: enabled='no'
+cheque: enabled='no'
+cod: enabled='no'
+
+== Available gateways ==
+[]
+
+== Cart ==
+items: 0 needs_shipping: false
+customer country: US / billing: US
+
+== Calculated packages ==
