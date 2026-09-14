@@ -263,6 +263,16 @@ html[dir="rtl"] .lily-drawer__empty-cta {
 	text-transform: none;
 }
 
+/* Astra's default .entry-title is text-align:left; on RTL requests the
+   Cart/Checkout/My Account page title inherits that unchanged and sits
+   pinned to the physical left edge instead of following the RTL reading
+   direction. */
+html[dir="rtl"] body.woocommerce-checkout .entry-title,
+html[dir="rtl"] body.woocommerce-cart .entry-title,
+html[dir="rtl"] body.woocommerce-account .entry-title {
+	text-align: right;
+}
+
 /* Arabic script: no Latin letter-spacing / uppercase. Checkout. */
 html[dir="rtl"] body.woocommerce-checkout .entry-title,
 html[dir="rtl"] body.woocommerce-cart .entry-title,

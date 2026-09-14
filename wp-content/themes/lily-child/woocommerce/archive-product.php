@@ -62,6 +62,27 @@ foreach (
 $lily_current_cat = $lily_is_shop ? 0 : ( is_product_category() ? get_queried_object_id() : 0 );
 
 /*
+ * The sidebar "Collections" filter can select a single category while
+ * staying on the base Shop URL (?filter_cat=slug). Without this, the "All"
+ * tab stays highlighted even though the sidebar filter has narrowed the
+ * grid to one category. Only resolve it when exactly one category is
+ * selected — the tabs are mutually exclusive and can't represent a
+ * multi-category selection.
+ */
+if ( $lily_is_shop ) {
+	$lily_active_filter_cats = lily_filter_current_values( 'filter_cat' );
+
+	if ( 1 === count( $lily_active_filter_cats ) ) {
+		foreach ( $lily_categories as $lily_tab_term ) {
+			if ( $lily_tab_term->slug === $lily_active_filter_cats[0] ) {
+				$lily_current_cat = (int) $lily_tab_term->term_id;
+				break;
+			}
+		}
+	}
+}
+
+/*
  * Sidebar filter terms reuse the existing pa_brand / pa_color taxonomies
  * through lily_get_attribute_filter_url(), so homepage brand/color links,
  * navbar dropdown links and these controls share one filtering system.
@@ -246,7 +267,7 @@ $lily_render_header = static function () use ( $lily_title, $lily_description ) 
 		?>
 
 		<nav class="lily-shop__cats" aria-label="<?php esc_attr_e( 'Shop categories', 'lily' ); ?>">
-			<a class="lily-shop__cat<?php echo $lily_is_shop ? ' is-active' : ''; ?>" href="<?php echo esc_url( wc_get_page_permalink( 'shop' ) ); ?>"><?php esc_html_e( 'All', 'lily' ); ?></a>
+			<a class="lily-shop__cat<?php echo ( $lily_is_shop && ! $lily_current_cat ) ? ' is-active' : ''; ?>" href="<?php echo esc_url( wc_get_page_permalink( 'shop' ) ); ?>"><?php esc_html_e( 'All', 'lily' ); ?></a>
 			<?php foreach ( $lily_categories as $lily_term ) : ?>
 				<a class="lily-shop__cat<?php echo (int) $lily_term->term_id === $lily_current_cat ? ' is-active' : ''; ?>" href="<?php echo esc_url( get_term_link( $lily_term ) ); ?>"><?php echo esc_html( $lily_term->name ); ?></a>
 			<?php endforeach; ?>

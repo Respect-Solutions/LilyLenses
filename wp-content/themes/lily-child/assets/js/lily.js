@@ -272,6 +272,15 @@
 					});
 				} else {
 					overlay.classList.remove('is-visible');
+					/* Matches the overlay's own 200ms opacity transition.
+					   Without this, the overlay was left `hidden = false`
+					   (i.e. still rendered, full-viewport) forever after the
+					   first close. */
+					window.setTimeout(function () {
+						if (!sidebar.classList.contains('is-open')) {
+							overlay.hidden = true;
+						}
+					}, 200);
 				}
 			}
 			document.documentElement.style.overflow = open ? 'hidden' : '';
@@ -618,6 +627,21 @@
 				if (!isOpen) {
 					drawer.hidden = true;
 					if (overlay) { overlay.hidden = true; }
+
+					/* The close button sits where header controls (e.g. the
+					   language switcher) render underneath. Once the overlay
+					   is hidden, the still-stationary cursor now sits over
+					   whatever is there, and hover-opened controls can pop
+					   open with no real mouse movement. Briefly suppress
+					   hover/pointer state for one tick so that stale
+					   position doesn't register as a new hover; a fixed
+					   short delay (rather than waiting on mousemove) also
+					   keeps this safe on touch devices, which may never
+					   fire mousemove after a tap. */
+					document.body.style.pointerEvents = 'none';
+					window.setTimeout(function () {
+						document.body.style.pointerEvents = '';
+					}, 50);
 				}
 			}, 280);
 		}

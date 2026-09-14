@@ -104,3 +104,33 @@ function lily_enqueue_assets() {
 	}
 }
 add_action( 'wp_enqueue_scripts', 'lily_enqueue_assets', 20 );
+
+/**
+ * Browser tab favicon — reuse the exact Navbar logo asset.
+ *
+ * The canonical navbar logo is the dashboard-controlled Navigation Settings
+ * logo (Lily → Navigation Settings), with the same fallbacks the navbar uses
+ * (WordPress Site Identity custom logo). No new asset is created; the favicon
+ * is served globally on every page through wp_head().
+ *
+ * @param string $url Current site icon URL (empty when none is set).
+ * @return string
+ */
+function lily_site_icon_url_from_nav_logo( $url ) {
+	$logo_id = absint( lily_nav_get_option( 'logo', 0 ) );
+
+	if ( $logo_id && 'attachment' === get_post_type( $logo_id ) ) {
+		return wp_get_attachment_image_url( $logo_id, 'full' );
+	}
+
+	if ( has_custom_logo() ) {
+		$custom_logo_id = (int) get_theme_mod( 'custom_logo' );
+
+		if ( $custom_logo_id && 'attachment' === get_post_type( $custom_logo_id ) ) {
+			return wp_get_attachment_image_url( $custom_logo_id, 'full' );
+		}
+	}
+
+	return $url;
+}
+add_filter( 'get_site_icon_url', 'lily_site_icon_url_from_nav_logo' );

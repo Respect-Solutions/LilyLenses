@@ -103,9 +103,14 @@ html body {
 	text-rendering: optimizeLegibility;
 }
 
-/* Astra paints its plain-container body white; reclaim the cream foundation */
+/* Astra paints its plain-container body white; reclaim the cream foundation.
+   Search results render through Astra's "Separate Containers" layout
+   (.ast-separate-container), which paints its own pale site-content
+   background — that shows through as a mismatched strip above the results
+   header whenever the responsive top padding creates a gap. */
 html body.ast-plain-container,
-html body.ast-page-builder-template {
+html body.ast-page-builder-template,
+html body.ast-separate-container {
 	background: var(--lily-bg);
 }
 
@@ -3259,10 +3264,15 @@ html body.lily-shop-page main#primary.site-main {
 	background: rgba(51, 28, 22, 0.4);
 	opacity: 0;
 	transition: opacity 200ms ease;
+	/* Only the visible overlay should intercept clicks — otherwise, once
+	   it's first opened, the still-rendered (but faded-out) overlay is left
+	   sitting over the whole page and swallows every tap after closing. */
+	pointer-events: none;
 }
 
 .lily-shop-drawer-overlay.is-visible {
 	opacity: 1;
+	pointer-events: auto;
 }
 
 /* Filter panel — one clean sidebar in the page's own cream, gently raised
@@ -4000,21 +4010,20 @@ html body.lily-shop-page input:focus:not(:focus-visible) {
 		font-size: 14px;
 	}
 
-	/* Category nav becomes a quiet horizontal scroll, never overflowing the page */
+	/* All four tabs must stay on ONE single row on mobile — fully visible,
+	   no wrapping, no horizontal scrolling. Mobile-only tightening of type
+	   and spacing; desktop (>900px) is unchanged. */
 	.lily-shop__cats {
 		flex-wrap: nowrap;
-		justify-content: flex-start;
-		gap: 24px;
-		overflow-x: auto;
+		justify-content: space-between;
+		gap: 10px;
 		margin-inline: calc(-1 * var(--lily-gutter));
 		padding-inline: var(--lily-gutter);
 		padding-bottom: 8px;
-		scrollbar-width: none;
-		-webkit-overflow-scrolling: touch;
 	}
 
-	.lily-shop__cats::-webkit-scrollbar {
-		display: none;
+	.lily-shop__cat {
+		font-size: clamp(10px, 3.2vw, 15px);
 	}
 
 	.lily-shop__layout {
@@ -4878,6 +4887,19 @@ html body.woocommerce-cart main#primary.site-main,
 html body.woocommerce-checkout main#primary.site-main {
 	display: block;
 	overflow-x: clip;
+}
+
+/* Astra's default #primary top margin (60px) only applies at min-width:1200px,
+   so below that the page title sits flush under the sticky header and its
+   accent-font ascenders get visually clipped. Restore breathing room below
+   1200px only — desktop (>=1200px) is untouched. Also covers My Account,
+   which uses the same default Astra page-title markup. */
+@media (max-width: 1199px) {
+	html body.woocommerce-cart .entry-header,
+	html body.woocommerce-checkout .entry-header,
+	html body.woocommerce-account .entry-header {
+		padding-block-start: clamp(28px, 5vw, 48px);
+	}
 }
 
 /* Comfortable rhythm before the footer */
@@ -6588,9 +6610,10 @@ html[dir="rtl"] .lily-drawer__close {
 	outline-offset: 3px;
 }
 
-/* Page lock while open — no horizontal overflow bleed */
+/* Page lock while open — prevents the background page from scrolling
+   behind the drawer/overlay (and any horizontal overflow bleed) */
 html body.lily-drawer-open {
-	overflow-x: hidden;
+	overflow: hidden;
 }
 
 @media (max-width: 600px) {
