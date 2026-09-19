@@ -1,13 +1,3 @@
-= 3.3.4 =
-* Fixed unauthenticated stored XSS via comment noise-key injection. Thanks to daroo and the Wordfence team
-* Added support for hyphenated custom language gettext tables in upgrading tasks
-* Process whitelisted email shortcodes in protected contexts
-* Added compatibility for the new Automatic User Language Detection pop-up configurator
-
-= 3.3.3 =
-* Fixed XSS vulnerability in Translation Editor with gettext markers in search query parameter. Thanks to Quentin Lamour and the Patchstack team for the report
-* Fixed Breakdance product title search indexing
-
 = 3.3.2 =
 * Fixed security issue regarding sensitive information exposure. Thanks to momopon1415 and the Wordfence team
 * Ensure Divi Builder always loads in the default language

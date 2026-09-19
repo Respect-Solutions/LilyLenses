@@ -9,7 +9,6 @@ use Automattic\WooCommerce\Blocks\BlockTypes\RatingFilter;
 use Automattic\WooCommerce\Blocks\BlockTypes\StockFilter;
 use WP_Query;
 use WC_Tax;
-use Automattic\WooCommerce\Enums\CatalogSortOrder;
 use Automattic\WooCommerce\Enums\ProductStockStatus;
 use Automattic\WooCommerce\Enums\TaxDisplayMode;
 
@@ -1120,7 +1119,7 @@ class QueryBuilder {
 			return array( 'orderby' => $orderby );
 		}
 
-		if ( CatalogSortOrder::PRICE === $orderby ) {
+		if ( 'price' === $orderby ) {
 			add_filter( 'posts_clauses', array( $this, 'add_price_sorting_posts_clauses' ), 10, 2 );
 			return array(
 				'isProductCollection' => true,
@@ -1129,7 +1128,7 @@ class QueryBuilder {
 		}
 
 		// The popularity orderby value here is for backwards compatibility as we have since removed the filter option.
-		if ( 'sales' === $orderby || CatalogSortOrder::POPULARITY === $orderby ) {
+		if ( 'sales' === $orderby || 'popularity' === $orderby ) {
 			add_filter( 'posts_clauses', array( $this, 'add_sales_sorting_posts_clauses' ), 10, 2 );
 			return array(
 				'isProductCollection' => true,
@@ -1137,7 +1136,7 @@ class QueryBuilder {
 			);
 		}
 
-		if ( CatalogSortOrder::MENU_ORDER === $orderby ) {
+		if ( 'menu_order' === $orderby ) {
 			add_filter( 'posts_clauses', array( $this, 'add_menu_order_with_title_fallback_posts_clauses' ), 10, 2 );
 			return array(
 				'isProductCollection' => true,

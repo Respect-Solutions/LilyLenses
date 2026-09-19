@@ -3,9 +3,9 @@ Contributors: cozmoslabs, razvan.mo, madalin.ungureanu, sareiodata, cristophor
 Donate link: https://www.translatepress.com/
 Tags: translate, translation, multilingual, automatic translation, ai translation, front-end translation, google translate, language
 Requires at least: 3.1.0
-Tested up to: 7.1
+Tested up to: 7.0.4
 Requires PHP: 7.4
-Stable tag: 3.3.5
+Stable tag: 3.3.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -169,19 +169,9 @@ Please report security bugs found in the source code of the TranslatePress plugi
 
 
 == Changelog ==
-= 3.3.5 =
-* Reduce Automatic Translation usage by better handling concurrent translation requests of the same page
-* Fixed stalling gettext optimization by failing it on invalid table ID schemas
-* Prevent incorrect string matching and database optimization failures when gettext tables use different character sets
-* Fixed REST redirect loop on subdirectory installs
-* Fixed bug relating to Gutenberg language restriction on classic blocks
-* Improved compatibility with Breakdance Builder
-* Fixed compatibility issue with Booking Calendar plugin’s settings
-* Fixed long AJAX checkout calls when Folders plugin is enabled
-* Stop foreign-locale gettext polluting trp_gettext_en_us
-* Do not add most query strings to hreflang tags
-* Fixed Text RTL saving against the wrong custom language
-* Improved SQL query for checking if table exists
+= 3.3.3 =
+* Fixed XSS vulnerability in Translation Editor with gettext markers in search query parameter. Thanks to Quentin Lamour and the Patchstack team for the report
+* Fixed Breakdance product title search indexing
 
 = Older versions =
 [Click Here](https://translatepress.com/docs/translatepress-free-changelog/?utm_source=wp.org&utm_medium=tp-description-page&utm_campaign=TPFree) to view the full changelog, or you can find it in the changelog.txt file in the plugin folder.

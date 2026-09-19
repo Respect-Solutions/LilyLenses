@@ -2,6 +2,7 @@
 
 namespace Automattic\WooCommerce\Admin\Features\OnboardingTasks\Tasks;
 
+use Automattic\WooCommerce\Admin\Features\Features;
 use Automattic\WooCommerce\Admin\Features\OnboardingTasks\Task;
 
 /**
@@ -26,24 +27,6 @@ class LaunchYourStore extends Task {
 	 */
 	public function get_id() {
 		return 'launch-your-store';
-	}
-
-	/**
-	 * Contextual image URL.
-	 *
-	 * @return string
-	 */
-	public function get_image_url() {
-		return WC()->plugin_url() . '/assets/images/task_list/launch-your-store-illustration.svg';
-	}
-
-	/**
-	 * Alt text for the contextual image.
-	 *
-	 * @return string
-	 */
-	public function get_image_alt() {
-		return __( 'Launch your store illustration', 'woocommerce' );
 	}
 
 	/**
@@ -100,7 +83,7 @@ class LaunchYourStore extends Task {
 	 * @return bool
 	 */
 	public function can_view() {
-		return true;
+		return Features::is_enabled( 'launch-your-store' );
 	}
 
 	/**

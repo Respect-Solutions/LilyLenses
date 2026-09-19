@@ -3618,15 +3618,6 @@ body.woocommerce_page_wc-orders {
 			}
 		}
 
-		// Hide the small-screen date/status copies when the corresponding column is hidden via Screen Options.
-		&:has( thead th.column-order_date.hidden ) .order_date.small-screen-only {
-			display: none;
-		}
-
-		&:has( thead th.column-order_status.hidden ) .order_status.small-screen-only {
-			display: none;
-		}
-
 	}
 }
 
@@ -5360,8 +5351,7 @@ img.help_tip {
 			padding-right: 24px;
 		}
 
-		th label,
-		th .wc-settings-radio-title {
+		th label {
 			position: relative;
 			display: block;
 
@@ -5574,8 +5564,7 @@ img.help_tip {
 				}
 			}
 
-			th label,
-			th .wc-settings-radio-title {
+			th label {
 				img.help_tip,
 				.woocommerce-help-tip {
 					margin: -7px -24px 0 0;
@@ -5701,30 +5690,6 @@ img.help_tip {
 					width: 100%;
 					height: auto;
 					display: block;
-				}
-
-				.woocommerce-product-gallery__video-preview {
-					display: block;
-					width: 100%;
-					aspect-ratio: 1;
-					object-fit: cover;
-					background: $gray-100;
-				}
-
-				&.video::before {
-					@include icon_dashicons("\f522");
-
-					left: 50%;
-					top: 50%;
-					transform: translate(-50%, -50%);
-					z-index: 1;
-					width: auto;
-					height: auto;
-					color: $contentbg;
-					font-size: 1.4em;
-					line-height: 1;
-					text-shadow: 0 0 0.25em rgba(0, 0, 0, 0.8);
-					pointer-events: none;
 				}
 			}
 
@@ -7306,7 +7271,7 @@ img.ui-datepicker-trigger {
 								margin: 0 10px 0 0;
 								background: transparent;
 								border: 0;
-								color: $wp-admin-text-gray;
+								color: #777;
 								text-align: center;
 								box-shadow: none;
 
@@ -7956,8 +7921,8 @@ table.bar_chart {
 				overflow: visible;
 			}
 
-			.is-expanded:has(td.column-thumb:not(.hidden)) .toggle-row {
-				top: -30px;
+			.is-expanded .toggle-row {
+				top: -28px;
 			}
 		}
 	}
@@ -8047,32 +8012,8 @@ table.bar_chart {
 		min-height: 180px
 	}
 
-	// Fixed layout so a long nowrap select2 selection truncates inside the Product
-	// column instead of stretching it and pushing Quantity past the modal edge.
-	&.wc-backbone-modal-add-products table.widefat {
-		table-layout: fixed;
-
-		th:last-child {
-			width: 100px;
-		}
-	}
-
 	.select2-container {
 		width: 100% !important;
-	}
-
-	// Reserve the end of the field for the clear (x) and chevron inside modals on every WP
-	// version; the .wc-wp-version-gte-70 rule below only reaches WP 7.0+.
-	.wc-backbone-modal-content .select2-container .select2-selection--single {
-		.select2-selection__rendered {
-			padding-inline-end: 40px;
-		}
-
-		// Pull the clear (x) into the 40px padding zone so it sits beside the chevron
-		// rather than at the text edge.
-		.select2-selection__clear {
-			margin-inline-end: -10px;
-		}
 	}
 }
 
@@ -8530,15 +8471,7 @@ table.bar_chart {
 
 			.select2-selection__rendered {
 				line-height: 38px;
-				padding-block: 0;
-				// 12px matches WP 7.0 native input padding; 40px reserves the end for the chevron and the clear (x).
-				padding-inline: 12px 40px;
-			}
-
-			// Pull the clear (x) into the reserved zone so it sits beside the chevron
-			// rather than out at the text edge.
-			.select2-selection__clear {
-				margin-inline-end: -10px;
+				padding: 0 12px; // Match WP 7.0 native input padding so text aligns with sibling inputs.
 			}
 
 			.select2-selection__arrow {
@@ -8573,8 +8506,7 @@ table.bar_chart {
 
 		.select2-selection__rendered {
 			line-height: 38px;
-			padding-block: 0;
-			padding-inline: 12px 40px; // Match WP 7.0 native input padding, reserving the end for the icons.
+			padding: 0 12px; // Match WP 7.0 native input padding.
 		}
 
 		.select2-selection__arrow {
@@ -8590,8 +8522,7 @@ table.bar_chart {
 
 		.select2-selection__rendered {
 			line-height: 38px;
-			padding-block: 0;
-			padding-inline: 12px 40px; // Match WP 7.0 native input padding, reserving the end for the icons.
+			padding: 0 12px;
 		}
 
 		.select2-selection__arrow {

@@ -1,10 +1,9 @@
 import { assign, has } from "lodash";
 import { addFilter } from "@wordpress/hooks";
 import { createHigherOrderComponent } from "@wordpress/compose";
-import { useSelect } from "@wordpress/data";
 import { __ } from "@wordpress/i18n";
 import { InspectorControls } from "@wordpress/block-editor";
-import { Notice, PanelBody } from "@wordpress/components";
+import { PanelBody } from "@wordpress/components";
 
 import ControlsCommon from './components/ControlsCommon'
 
@@ -12,27 +11,8 @@ import ControlsCommon from './components/ControlsCommon'
  * Add the language restriction inspector controls in the editor
  */
 function TrpBlockContentRestrictionControls(props) {
-    const { attributes, clientId, name, setAttributes } = props;
+    const { attributes, setAttributes } = props;
     const { TrpContentRestriction } = attributes;
-
-    const rootClientId = useSelect(
-        (select) => select("core/block-editor").getBlockRootClientId(clientId),
-        [clientId],
-    );
-
-    // WordPress serializes top-level Classic blocks as raw HTML, without a block
-    // delimiter. Consequently, custom block attributes cannot be persisted on them.
-    const isTopLevelClassicBlock = name === "core/freeform" && !rootClientId;
-
-    const handlePanelToggle = isTopLevelClassicBlock
-        ? undefined
-        : () =>
-              setAttributes({
-                  TrpContentRestriction: assign(
-                      { ...TrpContentRestriction },
-                      { panel_open: !TrpContentRestriction.panel_open },
-                  ),
-              });
 
     // Abort if the block type does not have the TrpContentRestriction attribute registered
     if ( !has(attributes, "TrpContentRestriction") )
@@ -47,18 +27,16 @@ function TrpBlockContentRestrictionControls(props) {
                 )}
                 className="translatepress-content-restriction-settings"
                 initialOpen={TrpContentRestriction.panel_open}
-                onToggle={handlePanelToggle}
+                onToggle={(value) =>
+                    setAttributes({
+                        TrpContentRestriction: assign(
+                            { ...TrpContentRestriction },
+                            { panel_open: !TrpContentRestriction.panel_open },
+                        ),
+                    })
+                }
             >
-                {isTopLevelClassicBlock ? (
-                    <Notice status="warning" isDismissible={false}>
-                        {__(
-                            "Language restrictions cannot be saved on a top-level Classic block. Convert it to blocks or place it inside a Group block first.",
-                            "translatepress-multilingual",
-                        )}
-                    </Notice>
-                ) : (
-                    <ControlsCommon {...props} />
-                )}
+                <ControlsCommon {...props} />
             </PanelBody>
         </InspectorControls>
     );

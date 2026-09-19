@@ -598,7 +598,7 @@ if ( typeof module !== 'undefined' && module.exports ) {
 				},
 				highlightOnFocus: function( query ) {
 					const inputs = $( query );
-					inputs.on( 'focus', function() {
+					inputs.focus( function() {
 						$( this ).select();
 					} );
 				},

@@ -12,14 +12,12 @@
  *
  * @see     https://woocommerce.com/document/template-structure/
  * @package WooCommerce\Templates
- * @version 11.1.0
+ * @version 9.4.0
  */
 
 declare( strict_types = 1);
-
-$wrapper_class = 1 === (int) $columns ? 'columns-1' : '';
 ?>
-<ul class="brand-thumbnails-description <?php echo esc_attr( $wrapper_class ); ?>">
+<ul class="brand-thumbnails-description">
 
 	<?php
 	foreach ( $brands as $index => $brand ) :

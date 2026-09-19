@@ -2,6 +2,7 @@
 
 namespace Automattic\WooCommerce\Admin\Features\OnboardingTasks\Tasks;
 
+use Automattic\WooCommerce\Admin\Features\Features;
 use Automattic\WooCommerce\Internal\Admin\Onboarding\OnboardingProfile;
 use Automattic\WooCommerce\Admin\Features\OnboardingTasks\Task;
 use WC_Data_Store;
@@ -36,24 +37,6 @@ class Shipping extends Task {
 	 */
 	public function get_id() {
 		return 'shipping';
-	}
-
-	/**
-	 * Contextual image URL.
-	 *
-	 * @return string
-	 */
-	public function get_image_url() {
-		return WC()->plugin_url() . '/assets/images/task_list/shipping-illustration.svg';
-	}
-
-	/**
-	 * Alt text for the contextual image.
-	 *
-	 * @return string
-	 */
-	public function get_image_alt() {
-		return __( 'Shipping illustration', 'woocommerce' );
 	}
 
 	/**
@@ -101,38 +84,42 @@ class Shipping extends Task {
 	 * @return bool
 	 */
 	public function can_view() {
-		if ( 'yes' === get_option( 'woocommerce_admin_created_default_shipping_zones' ) ) {
-			// If the user has already created a default shipping zone, we don't need to show the task.
-			return false;
+		if ( Features::is_enabled( 'shipping-smart-defaults' ) ) {
+			if ( 'yes' === get_option( 'woocommerce_admin_created_default_shipping_zones' ) ) {
+				// If the user has already created a default shipping zone, we don't need to show the task.
+				return false;
+			}
+
+			/**
+			 * Do not display the task when:
+			 * - The store sells digital products only
+			 * Display the task when:
+			 * - We don't know where the store's located
+			 * - The store is located in the UK, Australia or Canada
+			*/
+
+			if ( self::is_selling_digital_type_only() ) {
+				return false;
+			}
+
+			$default_store_country = wc_format_country_state_string( get_option( 'woocommerce_default_country', '' ) )['country'];
+
+			// Check if a store address is set so that we don't default to WooCommerce's default country US.
+			// Similar logic: https://github.com/woocommerce/woocommerce/blob/059d542394b48468587f252dcb6941c6425cd8d3/plugins/woocommerce-admin/client/profile-wizard/steps/store-details/index.js#L511-L516.
+			$store_country = '';
+			if ( ! empty( get_option( 'woocommerce_store_address', '' ) ) || 'US' !== $default_store_country ) {
+				$store_country = $default_store_country;
+			}
+
+			// Unknown country.
+			if ( empty( $store_country ) ) {
+				return true;
+			}
+
+			return in_array( $store_country, array( 'US', 'CA', 'AU', 'NZ', 'SG', 'HK', 'GB', 'ES', 'IT', 'DE', 'FR', 'MX', 'CO', 'CL', 'AR', 'PE', 'BR', 'UY', 'GT', 'NL', 'AT', 'BE', 'IE', 'PT' ), true );
 		}
 
-		/**
-		 * Do not display the task when:
-		 * - The store sells digital products only
-		 * Display the task when:
-		 * - We don't know where the store's located
-		 * - The store is located in the UK, Australia or Canada
-		*/
-
-		if ( self::is_selling_digital_type_only() ) {
-			return false;
-		}
-
-		$default_store_country = wc_format_country_state_string( get_option( 'woocommerce_default_country', '' ) )['country'];
-
-		// Check if a store address is set so that we don't default to WooCommerce's default country US.
-		// Similar logic: https://github.com/woocommerce/woocommerce/blob/059d542394b48468587f252dcb6941c6425cd8d3/plugins/woocommerce-admin/client/profile-wizard/steps/store-details/index.js#L511-L516.
-		$store_country = '';
-		if ( ! empty( get_option( 'woocommerce_store_address', '' ) ) || 'US' !== $default_store_country ) {
-			$store_country = $default_store_country;
-		}
-
-		// Unknown country.
-		if ( empty( $store_country ) ) {
-			return true;
-		}
-
-		return in_array( $store_country, array( 'US', 'CA', 'AU', 'NZ', 'SG', 'HK', 'GB', 'ES', 'IT', 'DE', 'FR', 'MX', 'CO', 'CL', 'AR', 'PE', 'BR', 'UY', 'GT', 'NL', 'AT', 'BE', 'IE', 'PT' ), true );
+		return self::has_physical_products();
 	}
 
 	/**

@@ -26,7 +26,6 @@ use Automattic\WooCommerce\EmailEditor\Integrations\Core\Renderer\Blocks\List_Bl
 use Automattic\WooCommerce\EmailEditor\Integrations\Core\Renderer\Blocks\List_Item;
 use Automattic\WooCommerce\EmailEditor\Integrations\Core\Renderer\Blocks\Media_Text;
 use Automattic\WooCommerce\EmailEditor\Integrations\Core\Renderer\Blocks\Post_Content;
-use Automattic\WooCommerce\EmailEditor\Integrations\Core\Renderer\Blocks\Post_Template;
 use Automattic\WooCommerce\EmailEditor\Integrations\Core\Renderer\Blocks\Quote;
 use Automattic\WooCommerce\EmailEditor\Integrations\Core\Renderer\Blocks\Video;
 use Automattic\WooCommerce\EmailEditor\Integrations\Core\Renderer\Blocks\Social_Link;
@@ -46,7 +45,6 @@ class Initializer {
 		'core/buttons',
 		'core/column',
 		'core/columns',
-		'core/embed',
 		'core/group',
 		'core/heading',
 		'core/image',
@@ -74,10 +72,10 @@ class Initializer {
 		'core/gallery',
 		'core/media-text',
 		'core/audio',
+		'core/embed',
 		'core/cover',
 		'core/video',
 		'core/post-title',
-		'core/post-template',
 	);
 
 	/**
@@ -248,9 +246,6 @@ class Initializer {
 				break;
 			case 'core/gallery':
 				$renderer = new Gallery();
-				break;
-			case 'core/post-template':
-				$renderer = new Post_Template();
 				break;
 			case 'core/media-text':
 				$renderer = new Media_Text();

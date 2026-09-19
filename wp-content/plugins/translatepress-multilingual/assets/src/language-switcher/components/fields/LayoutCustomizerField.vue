@@ -2,7 +2,7 @@
 import { reactive, watch, computed } from 'vue'
 import { usePreviewViewport }        from "../../composables/usePreviewViewport"
 
-import RadioGroupField from '../../../shared/components/fields/RadioGroupField.vue'
+import RadioGroupField from './RadioGroupField.vue'
 
 const positionOptions = [
     { value: 'bottom-right', label: 'Bottom Right' },

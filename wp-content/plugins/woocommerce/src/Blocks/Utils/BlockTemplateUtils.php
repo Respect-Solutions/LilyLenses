@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\Blocks\Utils;
 
 use WP_Block_Patterns_Registry;
+use Automattic\WooCommerce\Admin\Features\Features;
 use Automattic\WooCommerce\Blocks\Options;
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\BlockTemplatesRegistry;
@@ -309,7 +310,9 @@ class BlockTemplateUtils {
 			'taxonomy-product_attribute.html',
 		);
 
-		$wp_template_filenames[] = 'coming-soon.html';
+		if ( Features::is_enabled( 'launch-your-store' ) ) {
+			$wp_template_filenames[] = 'coming-soon.html';
+		}
 
 		$wp_template_part_filenames = array(
 			'checkout-header.html',

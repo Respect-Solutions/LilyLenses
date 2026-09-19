@@ -7,6 +7,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\Internal\Admin;
 
+use Automattic\WooCommerce\Admin\Features\Features;
 use Automattic\WooCommerce\Admin\Features\OnboardingTasks\Tasks\Shipping;
 
 /**
@@ -53,11 +54,13 @@ class Homescreen {
 
 		add_filter( 'woocommerce_admin_preload_options', array( $this, 'preload_options' ) );
 
-		add_filter(
-			'woocommerce_admin_shared_settings',
-			array( $this, 'maybe_set_default_shipping_options_on_home' ),
-			9999
-		);
+		if ( Features::is_enabled( 'shipping-smart-defaults' ) ) {
+			add_filter(
+				'woocommerce_admin_shared_settings',
+				array( $this, 'maybe_set_default_shipping_options_on_home' ),
+				9999
+			);
+		}
 	}
 
 	/**

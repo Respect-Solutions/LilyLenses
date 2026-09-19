@@ -171,12 +171,15 @@ class FeaturePlugin {
 		// Initialize API.
 		API\Init::instance();
 
-		Onboarding::init();
+		if ( Features::is_enabled( 'onboarding' ) ) {
+			Onboarding::init();
+		}
 
-		if ( $this->is_analytics_enabled_during_bootstrap() ) {
+		if ( Features::is_enabled( 'analytics' ) ) {
 			// Initialize Reports syncing.
 			ReportsSync::init();
 			CategoryLookup::instance()->init();
+
 			// Initialize Reports exporter.
 			ReportExporter::init();
 		}
@@ -194,19 +197,6 @@ class FeaturePlugin {
 	}
 
 	/**
-	 * Check whether Analytics should be initialized during plugin bootstrap.
-	 *
-	 * Feature definitions contain translated presentation strings and are not safe to build before init.
-	 *
-	 * @return bool
-	 */
-	private function is_analytics_enabled_during_bootstrap(): bool {
-		// Keep this fallback aligned with `enabled_by_default` for Analytics in FeaturesController.
-		return ! Features::is_analytics_disabled_by_legacy_filters()
-			&& 'yes' === get_option( Analytics::TOGGLE_OPTION_NAME, 'yes' );
-	}
-
-	/**
 	 * Set up our admin hooks and plugin loader.
 	 */
 	protected function hooks() {
@@ -216,11 +206,11 @@ class FeaturePlugin {
 		WCAdminAssets::get_instance();
 	}
 
+
 	/**
-	 * Adds the allowed features from a local `feature-config.php` file.
+	 * Overwrites the allowed features array using a local `feature-config.php` file.
 	 *
 	 * @param array $features Array of feature slugs.
-	 * @return array
 	 */
 	public function replace_supported_features( $features ) {
 		/**
@@ -229,9 +219,8 @@ class FeaturePlugin {
 		 * @since 6.5.0
 		 */
 		$feature_config = apply_filters( 'woocommerce_admin_get_feature_config', wc_admin_get_feature_config() );
-		$features       = array_merge( $features, array_keys( array_filter( $feature_config ) ) );
-
-		return array_values( array_unique( $features ) );
+		$features       = array_keys( array_filter( $feature_config ) );
+		return $features;
 	}
 
 	/**

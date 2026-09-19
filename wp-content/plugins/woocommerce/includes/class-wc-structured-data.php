@@ -830,14 +830,8 @@ class WC_Structured_Data {
 	 */
 	private function count_matching_variations( $product, $match_attributes ) {
 		$match_count = 0;
-		$child_ids   = $product->get_children();
 
-		if ( ! empty( $child_ids ) ) {
-			// Prime caches to reduce future queries.
-			_prime_post_caches( $child_ids );
-		}
-
-		foreach ( $child_ids as $variation_id ) {
+		foreach ( $product->get_children() as $variation_id ) {
 			$variation = wc_get_product( $variation_id );
 
 			if ( ! $variation instanceof WC_Product_Variation ) {

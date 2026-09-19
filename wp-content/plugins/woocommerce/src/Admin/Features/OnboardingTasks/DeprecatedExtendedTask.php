@@ -79,19 +79,6 @@ class DeprecatedExtendedTask extends Task {
 	 */
 	public $title = '';
 
-	/**
-	 * Contextual image URL.
-	 *
-	 * @var string
-	 */
-	public $image_url = '';
-
-	/**
-	 * Alt text for the contextual image.
-	 *
-	 * @var string
-	 */
-	public $image_alt = '';
 
 	/**
 	 * Constructor.
@@ -114,8 +101,6 @@ class DeprecatedExtendedTask extends Task {
 				'title'           => '',
 				'is_complete'     => false,
 				'time'            => null,
-				'image_url'       => '',
-				'image_alt'       => '',
 			)
 		);
 
@@ -129,8 +114,6 @@ class DeprecatedExtendedTask extends Task {
 		$this->level           = $task_args['level'];
 		$this->time            = $task_args['time'];
 		$this->title           = $task_args['title'];
-		$this->image_url       = $task_args['image_url'];
-		$this->image_alt       = $task_args['image_alt'];
 	}
 
 	/**
@@ -185,24 +168,6 @@ class DeprecatedExtendedTask extends Task {
 	 */
 	public function get_time() {
 		return $this->time;
-	}
-
-	/**
-	 * Contextual image URL.
-	 *
-	 * @return string
-	 */
-	public function get_image_url() {
-		return $this->image_url;
-	}
-
-	/**
-	 * Alt text for the contextual image.
-	 *
-	 * @return string
-	 */
-	public function get_image_alt() {
-		return $this->image_alt;
 	}
 
 	/**

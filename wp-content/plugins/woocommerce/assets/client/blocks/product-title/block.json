@@ -28,10 +28,8 @@
 		"spacing": {
 			"margin": true,
 			"__experimentalSkipSerialization": true
-		}
-	},
-	"selectors": {
-		"root": ".wp-block-woocommerce-product-title .wc-block-components-product-title"
+		},
+		"__experimentalSelector": ".wc-block-components-product-title"
 	},
 	"textdomain": "woocommerce",
 	"attributes": {

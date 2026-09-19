@@ -6,6 +6,7 @@
  */
 
 use Automattic\WooCommerce\Admin\PageController;
+use Automattic\WooCommerce\Admin\Features\Features;
 use Automattic\WooCommerce\Utilities\OrderUtil;
 
 /**
@@ -171,7 +172,7 @@ if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
 wc_admin_connect_page(
 	array(
 		'id'        => 'woocommerce-coupons',
-		'parent'    => 'woocommerce-marketing',
+		'parent'    => Features::is_enabled( 'coupons' ) ? 'woocommerce-marketing' : null,
 		'screen_id' => 'edit-shop_coupon',
 		'title'     => __( 'Coupons', 'woocommerce' ),
 		'path'      => add_query_arg( 'post_type', 'shop_coupon', $posttype_list_base ),

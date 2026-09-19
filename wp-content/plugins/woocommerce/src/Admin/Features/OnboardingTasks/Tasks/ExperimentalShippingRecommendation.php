@@ -3,6 +3,7 @@
 namespace Automattic\WooCommerce\Admin\Features\OnboardingTasks\Tasks;
 
 use Automattic\Jetpack\Connection\Manager;
+use Automattic\WooCommerce\Admin\Features\Features;
 use Automattic\WooCommerce\Admin\Features\OnboardingTasks\Task;
 use Automattic\WooCommerce\Admin\PluginsHelper;
 use Automattic\WooCommerce\Internal\Jetpack\JetpackConnection;
@@ -62,7 +63,7 @@ class ExperimentalShippingRecommendation extends Task {
 	 * @return bool
 	 */
 	public function can_view() {
-		return true;
+		return Features::is_enabled( 'shipping-smart-defaults' );
 	}
 
 	/**

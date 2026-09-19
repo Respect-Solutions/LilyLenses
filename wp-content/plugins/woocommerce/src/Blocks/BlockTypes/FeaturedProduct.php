@@ -2,6 +2,7 @@
 declare( strict_types = 1 );
 namespace Automattic\WooCommerce\Blocks\BlockTypes;
 
+use Automattic\WooCommerce\Enums\ProductStatus;
 use Automattic\WooCommerce\Enums\ProductType;
 
 /**
@@ -25,7 +26,7 @@ class FeaturedProduct extends FeaturedItem {
 		$id = absint( $attributes['productId'] ?? 0 );
 
 		$product = wc_get_product( $id );
-		if ( ! $product || ! $product->is_viewable() ) {
+		if ( ! $product || ( ProductStatus::PUBLISH !== $product->get_status() && ! current_user_can( 'read_product', $id ) ) ) {
 			return null;
 		}
 
@@ -43,28 +44,6 @@ class FeaturedProduct extends FeaturedItem {
 	}
 
 	/**
-	 * Returns the featured product image attachment ID.
-	 *
-	 * @param \WC_Product $product Product object.
-	 * @return int
-	 */
-	protected function get_item_image_id( $product ) {
-		$image_id = $product->get_image_id();
-		if ( $image_id ) {
-			return (int) $image_id;
-		}
-
-		if ( $product->get_parent_id() ) {
-			$parent_product = wc_get_product( $product->get_parent_id() );
-			if ( $parent_product ) {
-				return (int) $parent_product->get_image_id();
-			}
-		}
-
-		return 0;
-	}
-
-	/**
 	 * Returns the featured product image URL.
 	 *
 	 * @param \WC_Product $product Product object.
@@ -72,13 +51,17 @@ class FeaturedProduct extends FeaturedItem {
 	 * @return string
 	 */
 	protected function get_item_image( $product, $size = 'full' ) {
-		$image_id = $this->get_item_image_id( $product );
-
-		if ( $image_id ) {
-			return wp_get_attachment_image_url( $image_id, $size );
+		$image = '';
+		if ( $product->get_image_id() ) {
+			$image = wp_get_attachment_image_url( $product->get_image_id(), $size );
+		} elseif ( $product->get_parent_id() ) {
+			$parent_product = wc_get_product( $product->get_parent_id() );
+			if ( $parent_product ) {
+				$image = wp_get_attachment_image_url( $parent_product->get_image_id(), $size );
+			}
 		}
 
-		return '';
+		return $image;
 	}
 
 	/**

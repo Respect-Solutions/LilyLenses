@@ -592,7 +592,7 @@ $limit_clause",
 		$sql = $wpdb->prepare(
 			"
 SELECT(
-	COALESCE(($missing_orders_count_sql), 0)
+	($missing_orders_count_sql)
 	+
 	(SELECT COUNT(1) FROM (
 		SELECT orders.id FROM $orders_table orders

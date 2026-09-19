@@ -10,21 +10,7 @@
 		"interactivity": {
 			"clientNavigation": true
 		},
-		"align": [ "wide", "full" ],
-		"color": {
-			"background": true,
-			"text": false
-		},
-		"spacing": {
-			"margin": true,
-			"padding": true
-		},
-		"__experimentalBorder": {
-			"color": true,
-			"radius": true,
-			"style": true,
-			"width": true
-		}
+		"align": [ "wide", "full" ]
 	},
 	"attributes": {
 		"align": {

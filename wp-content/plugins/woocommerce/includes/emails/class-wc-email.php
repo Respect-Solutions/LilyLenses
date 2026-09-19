@@ -5,7 +5,6 @@
  * @package WooCommerce\Emails
  */
 
-use Automattic\WooCommerce\EmailEditor\Engine\Personalizer;
 use Automattic\WooCommerce\Internal\EmailEditor\BlockEmailRenderer;
 use Automattic\WooCommerce\Internal\EmailEditor\TransactionalEmailPersonalizer;
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
@@ -567,7 +566,7 @@ class WC_Email extends WC_Settings_API {
 		$subject = apply_filters( 'woocommerce_email_subject_' . $this->id, $this->format_string( $this->get_option_or_transient( 'subject', $this->get_default_subject() ) ), $this->object, $this );
 		if ( $this->block_email_editor_enabled ) {
 			// Because the new email editor uses rich-text component for subject editing, to be ensure that the subject is always in plain text, we need to strip all tags.
-			$subject = wp_strip_all_tags( $this->personalizer->personalize_transactional_content( $subject, $this, Personalizer::RENDERING_CONTEXT_TEXT ) );
+			$subject = wp_strip_all_tags( $this->personalizer->personalize_transactional_content( $subject, $this ) );
 		}
 		return $subject;
 	}
@@ -591,7 +590,7 @@ class WC_Email extends WC_Settings_API {
 		 */
 		$preheader = apply_filters( 'woocommerce_email_preheader' . $this->id, $this->format_string( $this->get_option_or_transient( 'preheader', '' ) ), $this->object, $this );
 		if ( $this->block_email_editor_enabled ) {
-			$preheader = $this->personalizer->personalize_transactional_content( $preheader, $this, Personalizer::RENDERING_CONTEXT_TEXT );
+			$preheader = $this->personalizer->personalize_transactional_content( $preheader, $this );
 		}
 		return $preheader;
 	}
@@ -1234,21 +1233,7 @@ class WC_Email extends WC_Settings_API {
 		$message              = apply_filters( 'woocommerce_mail_content', $this->style_inline( $message ) );
 		$mail_callback        = apply_filters( 'woocommerce_mail_callback', 'wp_mail', $this );
 		$mail_callback_params = apply_filters( 'woocommerce_mail_callback_params', array( $to, wp_specialchars_decode( $subject ), $message, $headers, $attachments ), $this );
-		$return               = $mail_callback( ...$mail_callback_params );
-		if ( ! is_bool( $return ) ) {
-			$original_type = gettype( $return );
-
-			$return = is_scalar( $return ) ? wc_string_to_bool( (string) $return ) : false;
-
-			wc_doing_it_wrong(
-				__METHOD__,
-				sprintf(
-					'The callback registered to the woocommerce_mail_callback filter should return a boolean; %s returned.',
-					$original_type
-				),
-				'11.1.0'
-			);
-		}
+		$return               = (bool) $mail_callback( ...$mail_callback_params );
 
 		remove_filter( 'wp_mail_from', array( $this, 'get_from_address' ) );
 		remove_filter( 'wp_mail_from_name', array( $this, 'get_from_name' ) );

@@ -36,15 +36,7 @@ class ShippingAddress extends AbstractOrderConfirmationBlock {
 
 		$controller = Package::container()->get( CheckoutFields::class );
 		$custom     = $this->render_additional_fields(
-			$controller->filter_fields_for_order_confirmation(
-				$controller->get_order_additional_fields_with_values( $order, 'address', 'shipping', 'view' ),
-				array(
-					'caller'     => 'ShippingAddress::render_content',
-					'order'      => $order,
-					'permission' => $permission,
-					'attributes' => $attributes,
-				)
-			)
+			$controller->get_order_additional_fields_with_values( $order, 'address', 'shipping', 'view' )
 		);
 
 		return $address . $phone . $custom;

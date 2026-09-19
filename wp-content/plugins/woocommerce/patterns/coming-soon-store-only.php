@@ -9,6 +9,7 @@
  * Slug: woocommerce/coming-soon-store-only
  * Categories: WooCommerce
  * Inserter: false
+ * Feature Flag: launch-your-store
  *
  * @package WooCommerce\Blocks
  */

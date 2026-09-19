@@ -2,6 +2,7 @@
 declare( strict_types=1 );
 namespace Automattic\WooCommerce\Blocks;
 
+use Automattic\WooCommerce\Admin\Features\Features;
 use Automattic\WooCommerce\Blocks\Utils\BlockTemplateUtils;
 use Automattic\WooCommerce\Blocks\Templates\AbstractTemplate;
 use Automattic\WooCommerce\Blocks\Templates\AbstractTemplatePart;
@@ -58,7 +59,9 @@ class BlockTemplatesRegistry {
 		} else {
 			$templates = array();
 		}
-		$templates[ ComingSoonTemplate::SLUG ] = new ComingSoonTemplate();
+		if ( Features::is_enabled( 'launch-your-store' ) ) {
+			$templates[ ComingSoonTemplate::SLUG ] = new ComingSoonTemplate();
+		}
 		if ( BlockTemplateUtils::supports_block_templates( 'wp_template_part' ) ) {
 			$template_parts = array(
 				MiniCartTemplate::SLUG       => new MiniCartTemplate(),

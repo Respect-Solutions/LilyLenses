@@ -34,13 +34,7 @@ class ProductCountCache {
 	 * @return string[]
 	 */
 	private function get_saved_statuses_for_type( string $product_type ): array {
-		$cache_key = $this->get_saved_statuses_cache_key( $product_type );
-		$statuses  = wp_cache_get( $cache_key );
-		// Defensive perimeter: purge corrupted cache entries (external cache modification).
-		if ( false !== $statuses && ( ! is_array( $statuses ) || array_filter( $statuses, 'is_string' ) !== $statuses ) ) {
-			$statuses = false;
-			wp_cache_delete( $cache_key );
-		}
+		$statuses = wp_cache_get( $this->get_saved_statuses_cache_key( $product_type ) );
 
 		return is_array( $statuses ) ? $statuses : array();
 	}
@@ -120,20 +114,24 @@ class ProductCountCache {
 	/**
 	 * Set the cache count value for multiple statuses at once.
 	 *
-	 * @deprecated 11.1.0
-	 *
 	 * @param string            $product_type The post type (e.g. 'product', 'product_variation').
 	 * @param array<string,int> $counts       Counts keyed by status slug (e.g. [ 'publish' => 10, 'draft' => 5 ]).
 	 *
 	 * @return array<string,bool>
 	 */
 	public function set_multiple( string $product_type, array $counts ) {
-		$results = array();
-		foreach ( $counts as $status => $count ) {
-			$results[ $this->get_cache_key( $product_type, (string) $status ) ] = $this->set( $product_type, (string) $status, (int) $count );
+		if ( empty( $counts ) ) {
+			return array();
 		}
 
-		return $results;
+		$this->ensure_statuses_for_type( $product_type, array_keys( $counts ) );
+
+		$mapped_counts = array();
+		foreach ( $counts as $status => $count ) {
+			$mapped_counts[ $this->get_cache_key( $product_type, $status ) ] = (int) $count;
+		}
+
+		return wp_cache_set_multiple( $mapped_counts, '', $this->expiration );
 	}
 
 	/**
@@ -162,20 +160,13 @@ class ProductCountCache {
 
 		$cache_key_prefix = $this->get_cache_key( $product_type, '' );
 		foreach ( $cache_values as $key => $value ) {
-			// Defensive perimeter: purge corrupted cache entries (external cache modification);
-			// As some object caching plugins are pushing integer but pulling string, we use is_numeric here.
-			if ( false !== $value && ! is_numeric( $value ) ) {
-				$value = false;
-				wp_cache_delete( $key );
-			}
-
 			// Return null for the entire cache if any of the requested statuses are not found because they fell out of cache.
 			if ( false === $value ) {
 				return null;
 			}
 
 			$status                   = substr( $key, strlen( $cache_key_prefix ) );
-			$status_values[ $status ] = (int) $value;
+			$status_values[ $status ] = $value;
 		}
 
 		return $status_values;

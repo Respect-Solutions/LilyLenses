@@ -259,9 +259,20 @@ class PageController {
 	 * @return string Current screen ID.
 	 */
 	public function get_current_screen_id() {
-		// The screen cannot be determined during REST API requests or before the WordPress screen API loads.
-		$current_screen = ( wp_is_serving_rest_request() || ! function_exists( 'get_current_screen' ) ) ? null : get_current_screen();
+		// Return early if this is a REST API request.
+		if ( wp_is_serving_rest_request() ) {
+			/**
+			 * Filter the current screen ID for REST API requests.
+			 *
+			 * @since 3.9.0
+			 *
+			 * @param string|boolean $screen_id The screen id or false if not identified.
+			 * @param WP_Screen      $current_screen The current WP_Screen.
+			 */
+			return apply_filters( 'woocommerce_navigation_current_screen_id', false, null );
+		}
 
+		$current_screen = get_current_screen();
 		if ( ! $current_screen ) {
 			// Filter documentation below.
 			return apply_filters( 'woocommerce_navigation_current_screen_id', false, $current_screen );
@@ -356,10 +367,8 @@ class PageController {
 		 *
 		 * Used for identifying pages to render the WooCommerce Admin header.
 		 *
-		 * @since 3.9.0
-		 *
-		 * @param string|boolean  $screen_id The screen id or false if not identified.
-		 * @param \WP_Screen|null $current_screen The current WP_Screen or null if it could not be determined.
+		 * @param string|boolean $screen_id The screen id or false if not identified.
+		 * @param WP_Screen      $current_screen The current WP_Screen.
 		 */
 		return apply_filters( 'woocommerce_navigation_current_screen_id', implode( '-', $screen_pieces ), $current_screen );
 	}
@@ -495,8 +504,7 @@ class PageController {
 				$options['title'],
 				$options['capability'],
 				$options['path'],
-				array( __CLASS__, 'page_wrapper' ),
-				$options['position']
+				array( __CLASS__, 'page_wrapper' )
 			);
 		}
 

@@ -8,9 +8,9 @@
  * @package WooCommerce\Classes\Products
  */
 
-use Automattic\WooCommerce\Enums\ProductStockStatus;
 use Automattic\WooCommerce\Enums\ProductType;
-use Automattic\WooCommerce\Internal\Utilities\ProductUtil;
+use Automattic\WooCommerce\Enums\ProductStockStatus;
+use Automattic\WooCommerce\Internal\VariationGallery\Package as VariationGalleryPackage;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -39,16 +39,6 @@ class WC_Product_Variable extends WC_Product {
 	 * @var array
 	 */
 	protected $variation_attributes = null;
-
-	/**
-	 * Variations prices.
-	 *
-	 * @var array<string,array<string,array<int,float>>>
-	 */
-	private array $variation_prices = array(
-		'for_display:0' => array(),
-		'for_display:1' => array(),
-	);
 
 	/**
 	 * Get internal type.
@@ -108,19 +98,13 @@ class WC_Product_Variable extends WC_Product {
 	 * @return array Array of RAW prices, regular prices, and sale prices with keys set to variation ID.
 	 */
 	public function get_variation_prices( $for_display = false ) {
-		/** @var array<string,array<int,float>> $prices */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 		$prices = $this->data_store->read_price_data( $this, $for_display );
-		if ( ! is_array( $prices ) ) {
-			return $prices;
+
+		foreach ( $prices as $price_key => $variation_prices ) {
+			$prices[ $price_key ] = $this->sort_variation_prices( $variation_prices );
 		}
 
-		// Performance note: loose != compares key/value pairs regardless of order, so a re-sort is only triggered when prices actually change.
-		$cache_key = $for_display ? 'for_display:1' : 'for_display:0';
-		if ( $this->variation_prices[ $cache_key ] != $prices ) { // phpcs:ignore Universal.Operators.StrictComparisons.LooseNotEqual
-			$this->variation_prices[ $cache_key ] = array_map( fn( $variation_prices ) => $this->sort_variation_prices( $variation_prices ), $prices );
-		}
-
-		return $this->variation_prices[ $cache_key ];
+		return $prices;
 	}
 
 	/**
@@ -342,9 +326,9 @@ class WC_Product_Variable extends WC_Product {
 	 * @phpstan-return ($return is 'array' ? array[] : WC_Product_Variation[])
 	 */
 	public function get_available_variations( $return = 'array' ) {
-		$variations              = array();
 		$variation_ids           = $this->get_children();
 		$hide_out_of_stock_items = ( 'yes' === get_option( 'woocommerce_hide_out_of_stock_items' ) );
+		$available_variations    = array();
 
 		if ( ! empty( $variation_ids ) ) {
 			// Prime caches to reduce future queries.
@@ -352,6 +336,7 @@ class WC_Product_Variable extends WC_Product {
 		}
 
 		foreach ( $variation_ids as $variation_id ) {
+
 			$variation = wc_get_product( $variation_id );
 
 			// Hide out of stock variations if 'Hide out of stock items from the catalog' is checked.
@@ -372,19 +357,18 @@ class WC_Product_Variable extends WC_Product {
 				continue;
 			}
 
-			$variations[] = $variation;
+			if ( 'array' === $return ) {
+				$available_variations[] = $this->get_available_variation( $variation );
+			} else {
+				$available_variations[] = $variation;
+			}
 		}
 
-		if ( 'array' === $return && ! empty( $variations ) ) {
-			wc_get_container()->get( ProductUtil::class )->prime_image_caches( $variations );
-			$variations_data = array_values( array_filter( array_map( fn ( $variation ) => $this->get_available_variation( $variation ), $variations ) ) );
-
-			/** @var array[] $variations_data */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-			return $variations_data;
+		if ( 'array' === $return ) {
+			$available_variations = array_values( array_filter( $available_variations ) );
 		}
 
-		/** @var WC_Product_Variation[] $variations */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-		return $variations;
+		return $available_variations;
 	}
 
 	/**
@@ -396,29 +380,27 @@ class WC_Product_Variable extends WC_Product {
 	 * @return bool
 	 */
 	public function has_purchasable_variations() {
-		/**
-		 * If you are evaluating performance, introducing a transient is not a viable solution.
-		 *
-		 * - The transient improves the 95th percentile (P95) load time of the product page by approximately 10%, but does not affect the median.
-		 * - The transient breaks backward compatibility. The woocommerce_is_purchasable filter from \WC_Product::is_purchasable is used by
-		 *   extensions to control product purchasability based on user role, membership, geolocation, or login status.
-		 */
-		$has_purchasable_variations = false;
-		$variation_ids              = $this->get_children();
+		$variation_ids = $this->get_children();
+
 		if ( ! empty( $variation_ids ) ) {
 			// Prime caches to reduce future queries.
 			_prime_post_caches( $variation_ids );
-
-			foreach ( $variation_ids as $variation_id ) {
-				$variation = wc_get_product( $variation_id );
-				if ( $variation && $variation->is_purchasable() && $variation->is_in_stock() ) {
-					$has_purchasable_variations = true;
-					break;
-				}
-			}
 		}
 
-		return $has_purchasable_variations;
+		foreach ( $variation_ids as $variation_id ) {
+
+			$variation = wc_get_product( $variation_id );
+
+			if ( ! $variation || ! $variation->is_purchasable() || ! $variation->is_in_stock() ) {
+				continue;
+			}
+
+			// We found at least one available variation, so return true.
+			return true;
+		}
+
+		// There were either no variations, or they were hidden because of the "continues" above.
+		return false;
 	}
 
 	/**
@@ -441,13 +423,17 @@ class WC_Product_Variable extends WC_Product {
 		$parent_featured_id       = (int) $this->get_image_id();
 		$parent_featured_valid    = $parent_featured_id && wp_attachment_is_image( $parent_featured_id );
 
-		$variation_gallery_image_ids = array_values(
-			array_filter(
-				array_map( 'intval', $variation->get_gallery_image_ids() ),
-				'wp_attachment_is_image'
-			)
-		);
+		$variation_gallery_image_ids = array();
 		$variation_gallery_html      = '';
+
+		if ( VariationGalleryPackage::is_enabled() ) {
+			$variation_gallery_image_ids = array_values(
+				array_filter(
+					array_map( 'intval', $variation->get_gallery_image_ids() ),
+					'wp_attachment_is_image'
+				)
+			);
+		}
 
 		// Prefer variation-owned images over the parent fallback.
 		if ( $variation_featured_valid ) {

@@ -255,7 +255,7 @@ const mark = (el) => TRP_BOUND.add(el);
 const isMarked = (el) => TRP_BOUND.has(el);
 
 const WRAPPER = '.trp-shortcode-switcher__wrapper';
-const OVERLAY = '.trp-language-switcher:not(.trp-opposite-button):not(.trp-ald-language-selector)';
+const OVERLAY = '.trp-language-switcher:not(.trp-opposite-button)';
 
 // Helpers
 function inGutenberg() {
@@ -280,7 +280,7 @@ function initLanguageSwitchers(root = document) {
 
     root.querySelectorAll(WRAPPER)
         .forEach(wrapper => {
-            const overlay = wrapper.querySelector(OVERLAY);
+            const overlay = wrapper.querySelector('.trp-language-switcher:not(.trp-opposite-button)');
 
             if (overlay && !isMarked(overlay)) {
                 mark(overlay);

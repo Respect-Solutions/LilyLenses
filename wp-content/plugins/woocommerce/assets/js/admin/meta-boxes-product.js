@@ -161,21 +161,9 @@ jQuery( function ( $ ) {
 			} else if ( 'grouped' === select_val ) {
 				$( 'input#_downloadable' ).prop( 'checked', false );
 				$( 'input#_virtual' ).prop( 'checked', false );
-				$( 'input#_manage_stock' )
-					.prop( 'checked', false )
-					.trigger( 'change' );
-				$( '[name="_stock_status"]' )
-					.val( [ 'instock' ] )
-					.trigger( 'change' );
 			} else if ( 'external' === select_val ) {
 				$( 'input#_downloadable' ).prop( 'checked', false );
 				$( 'input#_virtual' ).prop( 'checked', false );
-				$( 'input#_manage_stock' )
-					.prop( 'checked', false )
-					.trigger( 'change' );
-				$( '[name="_stock_status"]' )
-					.val( [ 'instock' ] )
-					.trigger( 'change' );
 			}
 
 			const cogs_field_tip = $( '._cogs_value_field' ).find(
@@ -1318,148 +1306,14 @@ jQuery( function ( $ ) {
 	} );
 
 	// Product gallery file uploads.
-	let product_gallery_frame;
-	const $image_gallery_ids = $( '#product_image_gallery' );
-	const $media_gallery = $( '#product_media_gallery' );
-	const $product_images = $( '#product_images_container' ).find(
+	var product_gallery_frame;
+	var $image_gallery_ids = $( '#product_image_gallery' );
+	var $product_images = $( '#product_images_container' ).find(
 		'ul.product_images'
 	);
 
-	function getProductGalleryImageSrc( attachment ) {
-		return attachment.sizes && attachment.sizes.thumbnail
-			? attachment.sizes.thumbnail.url
-			: attachment.url;
-	}
-
-	function addProductGalleryMediaItemActions( $item, $el ) {
-		$item.append(
-			$( '<ul />', {
-				class: 'actions',
-			} ).append(
-				$( '<li />' ).append(
-					$( '<a />', {
-						href: '#',
-						class: 'delete tips',
-						title: $el.data( 'delete' ),
-						'data-tip': $el.data( 'delete' ),
-						text: $el.data( 'text' ),
-					} )
-				)
-			)
-		);
-
-		return $item;
-	}
-
-	function createProductGalleryImageItem( attachment, $el ) {
-		const attachmentImage = getProductGalleryImageSrc( attachment );
-
-		if ( ! attachment.id || ! attachmentImage ) {
-			return null;
-		}
-
-		const $item = $( '<li />', {
-			class: 'image',
-		} )
-			.attr( 'data-attachment_id', attachment.id )
-			.attr( 'data-media_type', 'image' )
-			.attr( 'data-source_type', 'attachment' );
-
-		$item.append(
-			$( '<img />', {
-				src: attachmentImage,
-			} )
-		);
-
-		return addProductGalleryMediaItemActions( $item, $el );
-	}
-
-	function createProductGalleryVideoItem( attachment, $el ) {
-		const posterId = parseInt( attachment.poster_id, 10 ) || 0;
-
-		if ( ! attachment.id || ! attachment.url ) {
-			return null;
-		}
-
-		const $item = $( '<li />', {
-			class: 'image video',
-		} )
-			.attr( 'data-attachment_id', attachment.id )
-			.attr( 'data-media_type', 'video' )
-			.attr( 'data-source_type', 'attachment' )
-			.attr( 'data-poster_id', posterId );
-
-		$item.append(
-			$( '<video />', {
-				class: 'woocommerce-product-gallery__video-preview',
-				src: attachment.url,
-				preload: 'metadata',
-				muted: 'muted',
-				'aria-hidden': 'true',
-			} )
-		);
-
-		return addProductGalleryMediaItemActions( $item, $el );
-	}
-
-	function createProductGalleryMediaItem( attachment, $el, allowVideos ) {
-		const mediaType = attachment.type;
-
-		if ( 'image' === mediaType ) {
-			return createProductGalleryImageItem( attachment, $el );
-		}
-
-		if ( allowVideos && 'video' === mediaType ) {
-			return createProductGalleryVideoItem( attachment, $el );
-		}
-
-		return null;
-	}
-
-	function getProductGalleryMediaItemData( $item ) {
-		const attachmentId = parseInt( $item.attr( 'data-attachment_id' ), 10 );
-		const mediaType = $item.attr( 'data-media_type' ) || 'image';
-
-		if ( ! attachmentId ) {
-			return null;
-		}
-
-		const mediaItem = {
-			media_type: mediaType,
-			source_type: 'attachment',
-			id: attachmentId,
-		};
-
-		if ( 'video' === mediaType ) {
-			const posterId = parseInt( $item.attr( 'data-poster_id' ), 10 );
-
-			if ( posterId ) {
-				mediaItem.poster_id = posterId;
-			}
-		}
-
-		return mediaItem;
-	}
-
-	function updateProductGalleryFields() {
-		const mediaGallery = $( '#product_images_container' )
-			.find( 'ul li.image' )
-			.css( 'cursor', 'default' )
-			.map( function () {
-				return getProductGalleryMediaItemData( $( this ) );
-			} )
-			.get();
-		const attachmentIds = mediaGallery
-			.filter( ( mediaItem ) => 'image' === mediaItem.media_type )
-			.map( ( mediaItem ) => mediaItem.id );
-
-		$image_gallery_ids.val( attachmentIds.join( ',' ) );
-		$media_gallery.val( JSON.stringify( mediaGallery ) );
-	}
-
 	$( '.add_product_images' ).on( 'click', 'a', function ( event ) {
-		const $el = $( this );
-		const allowVideos = 'yes' === $el.data( 'allow_videos' );
+		var $el = $( this );
 
 		event.preventDefault();
 
@@ -1479,40 +1333,51 @@ jQuery( function ( $ ) {
 			states: [
 				new wp.media.controller.Library( {
 					title: $el.data( 'choose' ),
-					library: wp.media.query( {
-						type: allowVideos ? [ 'image', 'video' ] : 'image',
-					} ),
 					filterable: 'all',
 					multiple: true,
 				} ),
 			],
 		} );
 
-		// When media is selected, run a callback.
+		// When an image is selected, run a callback.
 		product_gallery_frame.on( 'select', function () {
-			const selection = product_gallery_frame.state().get( 'selection' );
+			var selection = product_gallery_frame.state().get( 'selection' );
+			var attachment_ids = $image_gallery_ids.val();
 
 			selection.map( function ( attachment ) {
-				const attachmentData = attachment.toJSON();
-				const $item = createProductGalleryMediaItem(
-					attachmentData,
-					$el,
-					allowVideos
-				);
+				attachment = attachment.toJSON();
 
-				if ( $item ) {
-					$product_images.append( $item );
+				if ( attachment.id ) {
+					attachment_ids = attachment_ids
+						? attachment_ids + ',' + attachment.id
+						: attachment.id;
+					var attachment_image =
+						attachment.sizes && attachment.sizes.thumbnail
+							? attachment.sizes.thumbnail.url
+							: attachment.url;
+
+					$product_images.append(
+						'<li class="image" data-attachment_id="' +
+							attachment.id +
+							'"><img src="' +
+							attachment_image +
+							'" /><ul class="actions"><li><a href="#" class="delete" title="' +
+							$el.data( 'delete' ) +
+							'">' +
+							$el.data( 'text' ) +
+							'</a></li></ul></li>'
+					);
 				}
 			} );
 
-			updateProductGalleryFields();
+			$image_gallery_ids.val( attachment_ids );
 		} );
 
 		// Finally, open the modal.
 		product_gallery_frame.open();
 	} );
 
-	// Media ordering.
+	// Image ordering.
 	$product_images.sortable( {
 		items: 'li.image',
 		cursor: 'move',
@@ -1528,14 +1393,36 @@ jQuery( function ( $ ) {
 		stop: function ( event, ui ) {
 			ui.item.removeAttr( 'style' );
 		},
-		update: updateProductGalleryFields,
+		update: function () {
+			var attachment_ids = '';
+
+			$( '#product_images_container' )
+				.find( 'ul li.image' )
+				.css( 'cursor', 'default' )
+				.each( function () {
+					var attachment_id = $( this ).attr( 'data-attachment_id' );
+					attachment_ids = attachment_ids + attachment_id + ',';
+				} );
+
+			$image_gallery_ids.val( attachment_ids );
+		},
 	} );
 
-	// Remove media.
+	// Remove images.
 	$( '#product_images_container' ).on( 'click', 'a.delete', function () {
 		$( this ).closest( 'li.image' ).remove();
 
-		updateProductGalleryFields();
+		var attachment_ids = '';
+
+		$( '#product_images_container' )
+			.find( 'ul li.image' )
+			.css( 'cursor', 'default' )
+			.each( function () {
+				var attachment_id = $( this ).attr( 'data-attachment_id' );
+				attachment_ids = attachment_ids + attachment_id + ',';
+			} );
+
+		$image_gallery_ids.val( attachment_ids );
 
 		// Remove any lingering tooltips.
 		$( '#tiptip_holder' ).removeAttr( 'style' );
@@ -1582,7 +1469,8 @@ jQuery( function ( $ ) {
 			keepAlive: true,
 		} );
 
-	// Add tooltips to the product image and product gallery actions.
+	// add a tooltip to the right of the product image meta box "Set product image" and "Add product gallery images"
+	const setProductImageLink = $( '#set-post-thumbnail' );
 	// Escape the translated label before interpolating into the attribute so a
 	// translation containing quotes or markup cannot break the rendered span.
 	const tooltipMarkup = `<span class="woocommerce-help-tip" tabindex="0" aria-label="${ _.escape(
@@ -1596,53 +1484,16 @@ jQuery( function ( $ ) {
 		delay: 200,
 		keepAlive: true,
 	};
-	const productImageContainer = $( '#postimagediv .inside' );
-	const productImageTooltipClass = 'woocommerce-product-image-help-tip';
 
-	const syncProductImageTooltip = () => {
-		const removeProductImageLink = $( '#remove-post-thumbnail' );
-		const productImageLink = removeProductImageLink.length
-			? removeProductImageLink
-			: $( '#set-post-thumbnail' );
-		const existingTooltip = productImageContainer.find(
-			`.${ productImageTooltipClass }`
-		);
-
-		if ( ! productImageLink.length ) {
-			existingTooltip.remove();
-			return;
-		}
-
-		if (
-			existingTooltip.length &&
-			existingTooltip.prev()[ 0 ] === productImageLink[ 0 ]
-		) {
-			return;
-		}
-
-		existingTooltip.remove();
+	if ( setProductImageLink ) {
 		$( tooltipMarkup )
-			.addClass( productImageTooltipClass )
-			.insertAfter( productImageLink )
+			.insertAfter( setProductImageLink )
 			.tipTip( tooltipData );
-	};
-
-	if ( productImageContainer.length ) {
-		syncProductImageTooltip();
-
-		// WPSetThumbnailHTML() replaces the direct children of `.inside`, so
-		// `childList` alone observes every image change. Omitting `subtree`
-		// also keeps the observer blind to the tooltip's own insertion, which
-		// happens one level deeper.
-		new MutationObserver( syncProductImageTooltip ).observe(
-			productImageContainer[ 0 ],
-			{ childList: true }
-		);
 	}
 
 	const addProductImagesLink = $( '.add_product_images > a' );
 
-	if ( addProductImagesLink.length ) {
+	if ( addProductImagesLink ) {
 		$( tooltipMarkup )
 			.insertAfter( addProductImagesLink )
 			.tipTip( tooltipData );

@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\Internal\Admin\Settings\PaymentsProviders;
 
-use Automattic\WooCommerce\Internal\Admin\Settings\Payments;
 use Automattic\WooCommerce\Internal\Logging\SafeGlobalFunctionProxy;
 use Throwable;
 use WC_Payment_Gateway;
@@ -155,12 +154,7 @@ class Mollie extends PaymentGateway {
 			$settings_url = add_query_arg( 'section', $section, $settings_url );
 		}
 
-		return add_query_arg(
-			array(
-				'from' => Payments::FROM_PAYMENTS_SETTINGS,
-			),
-			$settings_url
-		);
+		return $settings_url;
 	}
 
 	/**

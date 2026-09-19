@@ -5,6 +5,7 @@
 
 namespace Automattic\WooCommerce\Internal\Admin\Onboarding;
 
+use Automattic\WooCommerce\Admin\Features\Features;
 use Automattic\WooCommerce\Internal\Admin\Onboarding\OnboardingProfile;
 use Automattic\WooCommerce\Admin\Loader;
 use Automattic\WooCommerce\Admin\PluginsHelper;
@@ -63,7 +64,7 @@ class OnboardingProducts {
 				$has_cbd_industry = in_array( 'cbd-other-hemp-derived-products', array_column( $profile['industry'], 'slug' ), true );
 			}
 		}
-		if ( 'US' !== $base_location['country'] || $has_cbd_industry ) {
+		if ( ! Features::is_enabled( 'subscriptions' ) || 'US' !== $base_location['country'] || $has_cbd_industry ) {
 			$products['subscriptions']['product'] = 27147;
 		}
 

@@ -185,16 +185,6 @@ class TRP_Gettext_Manager {
 		$length   = strlen( $localemo );
 
 		global $l10n;
-
-		// WP 6.5+ WP_Translations has no get_filename(); compare the controller's active locale
-		// instead, otherwise this guard silently returns true and never detects a foreign catalog.
-		if ( isset( $l10n[ $domain ] ) && $l10n[ $domain ] instanceof WP_Translations ) {
-			if ( class_exists( 'WP_Translation_Controller' ) ) {
-				return strtolower( WP_Translation_Controller::get_instance()->get_locale() ) === strtolower( $locale );
-			}
-			return true;
-		}
-
 		if ( isset( $l10n[ $domain ] ) && is_object( $l10n[ $domain ] ) && method_exists( $l10n[ $domain ], 'get_filename' ) ) {
 			$mo_filename = $l10n[ $domain ]->get_filename();
 
@@ -229,9 +219,7 @@ class TRP_Gettext_Manager {
 			}
 
 			foreach ( $reload_domains as $domain ) {
-				// Skip WP_Translations (no get_filename() to rewrite); they already load in the
-				// correct locale now that determine_locale() is aligned, and this avoids a fatal.
-				if ( isset( $l10n[ $domain ] ) && is_object( $l10n[ $domain ] ) && method_exists( $l10n[ $domain ], 'get_filename' ) ) {
+				if ( isset( $l10n[ $domain ] ) && is_object( $l10n[ $domain ] ) ) {
 					$path     = $l10n[ $domain ]->get_filename();
 					$new_path = preg_replace( '/' . $domain . '-(.*).mo$/i', $domain . '-' . $locale . '.mo', $path );
 					if ( $new_path !== $path ) {
@@ -263,12 +251,12 @@ class TRP_Gettext_Manager {
 		//check here for wp ajax or woocommerce ajax
 		if ( ( defined( 'DOING_AJAX' ) && DOING_AJAX ) || ( defined( 'WC_DOING_AJAX' ) && WC_DOING_AJAX ) ) {
 			$referer = '';
-			if (!empty( $_REQUEST['_wp_http_referer']) && is_string( $_REQUEST['_wp_http_referer'] ) ){
+			if (!empty( $_REQUEST['_wp_http_referer'])){
 				// USUALLY this one is actually REQUEST_URI from the previous page. It's set by the wp_nonce_field() and wp_referer_field()
 				// wp_get_referer() returns $_SERVER['REQUEST_URI'] from the prev page (not a full URL)
                 // HOWEVER, the _wp_http_referer can be manually set by a plugin, so it can be a FULL URL in some cases
 				$referer = wp_unslash( esc_url_raw( $_REQUEST['_wp_http_referer'] ) );
-			} elseif (!empty($_SERVER['HTTP_REFERER']) && is_string( $_SERVER['HTTP_REFERER'] ) ) {
+			} elseif (!empty($_SERVER['HTTP_REFERER'])) {
 				// this one is an actual URL that the browser sets.
 				$referer = wp_unslash( esc_url_raw( $_SERVER['HTTP_REFERER'] ) );
 			}
@@ -581,7 +569,7 @@ class TRP_Gettext_Manager {
 							break;
 						}
 
-				$machine_strings = $this->machine_translator->translate( $strings_chunk, $language, $source_language, 'gettext' );
+				$machine_strings = $this->machine_translator->translate( $strings_chunk, $language, $source_language );
 				if ( empty( $machine_strings ) ) {
 							continue;
 						}
@@ -594,13 +582,9 @@ class TRP_Gettext_Manager {
 							}
 						}
 
-				// keep a saved chunk's locks as recently translated markers; when the save is
-				// skipped or fails, delete them so the strings can be retried right away
-				$chunk_saved = false;
-				if ( ! empty( $strings_to_save ) ) {
-					$chunk_saved = $gettext_insert_update->update_gettext_strings( $strings_to_save, $language, array( 'id', 'original', 'translated', 'domain', 'status', 'plural_form' ) );
-				}
-				$this->machine_translator->release_locks( $chunk_saved );
+						if ( ! empty( $strings_to_save ) ) {
+					$gettext_insert_update->update_gettext_strings( $strings_to_save, $language, array( 'id', 'original', 'translated', 'domain', 'status', 'plural_form' ) );
+						}
 					}
 
 			return;

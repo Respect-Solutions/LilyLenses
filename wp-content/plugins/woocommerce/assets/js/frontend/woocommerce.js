@@ -122,14 +122,13 @@ jQuery( function ( $ ) {
 
 	$( '.password-input' ).each( function () {
 		const describedBy = $( this ).find( 'input' ).attr( 'id' );
-		const $button = $( '<button>', {
-			type: 'button',
-			class: 'show-password-input',
-			'aria-label': woocommerce_params.i18n_password_show,
-		} );
-
-		$button.attr( 'aria-describedby', describedBy );
-		$( this ).append( $button );
+		$( this ).append(
+			'<button type="button" class="show-password-input" aria-label="' +
+				woocommerce_params.i18n_password_show +
+				'" aria-describedBy="' +
+				describedBy +
+				'"></button>'
+		);
 	} );
 
 	$( '.show-password-input' ).on( 'click', function ( event ) {
@@ -158,7 +157,7 @@ jQuery( function ( $ ) {
 				.prop( 'type', 'password' );
 		}
 
-		$( this ).siblings( 'input' ).trigger( 'focus' );
+		$( this ).siblings( 'input' ).focus();
 	} );
 
 	$( 'a.coming-soon-footer-banner-dismiss' ).on( 'click', function ( e ) {

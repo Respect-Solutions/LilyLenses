@@ -366,11 +366,6 @@ class Table extends Abstract_Block_Renderer {
 			return 'left';
 		}
 
-		// Header cells fall back to center, which is what the browser stylesheet gives them in the editor.
-		if ( 'TH' === $html->get_tag() ) {
-			return 'center';
-		}
-
 		return $rendering_context->get_default_text_align();
 	}
 
